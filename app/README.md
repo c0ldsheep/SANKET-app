@@ -5,9 +5,25 @@ lift or a basement. What each part does, and when it helps, is in [../FEATURES.m
 
 ## Install the test build
 
-Download the APK from the repository's **Releases** page and open it on an Android 10 or newer phone. Android will
-ask you to allow installing apps from your browser or file manager the first time. Test builds are signed with the
-development key, so a new one installs over the old one and keeps your data.
+Open the public download page, https://github.com/c0ldsheep/SANKET-app, on an Android 10 or newer phone and follow
+its three steps. No GitHub account is needed. Test builds are signed with the development key, so a new one installs
+over the old one and keeps your data.
+
+## Publishing a test build
+
+This repository is private, so its Releases page works only for people logged in to GitHub with access. Anyone else
+gets GitHub's "Not Found" reply instead of the app, and if that reply is saved under the APK's name, Android says
+"There was a problem parsing the package". That happened with 0.2.0. So test builds go on the public download
+page, and each one is checked the way a stranger would get it:
+
+1. Build and check: `./gradlew :core:test :mobile:lintDebug :mobile:assembleDebug`, then
+   `apksigner verify --print-certs` on the APK. The certificate must stay the same, or updates will fail.
+2. Write down the APK's size and SHA-256, and put them in the release notes and on the download page.
+3. Publish it as a normal release (not a pre-release, so "latest" points to it) on the download repository, and
+   update the version link in its README.
+4. Download the link with no login, in a private browser window or with `curl -L`. It must give the same size and
+   SHA-256.
+5. Install it on a phone from that link.
 
 ## Build
 

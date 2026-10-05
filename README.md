@@ -10,7 +10,7 @@ PRAYAS problem PRAYAS-COMP-26-S-020 at Terna Engineering College (mentor: Dr. Ro
 | [`app/`](app) | The Android app built on the study: protected downloads, lift detection, a memory of dead zones, a safety log | Unit-tested and checked on an Android 13 emulator; field testing is next |
 
 **Every feature, the situation it helps in and its status: [FEATURES.md](FEATURES.md).** The test build of the app
-is on the [Releases](../../releases) page.
+is on its public [download page](https://github.com/c0ldsheep/SANKET-app), which needs no GitHub account.
 
 ## What the study found (unseen test data)
 
