@@ -119,7 +119,8 @@ final class Engine {
     synchronized void start(boolean demoMode, Listener l) {
         listener = l;
         demo = demoMode ? DemoTrace.load(app) : null;
-        detector = new SanketDetector(params());
+        // The demo uses the study's exact settings, so it reproduces the study's timeline.
+        detector = new SanketDetector(demoMode ? SanketDetector.Params.tuned() : params());
         policy = new GuardPolicy();
         layer = new LayerWatch();
         badTicks = 0;
