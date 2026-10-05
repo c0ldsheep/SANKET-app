@@ -25,7 +25,8 @@ or a link that needed a login.
 
 1. Open **Files**, then **Downloads**, and delete every `SANKET…apk` file.
 2. Download again from the link above.
-3. Check the size before you open it: **260 KB**. A file of a few KB is not the app.
+3. Check the size before you open it: **260 KB** (some apps show **266 kB**, the same file counted another way).
+   Any other size is not the app.
 
 ## About this build
 
