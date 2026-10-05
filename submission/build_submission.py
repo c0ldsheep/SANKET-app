@@ -152,7 +152,11 @@ def content(M, team, n_tests, n_ticks):
             f"{n_ticks:,} reference readings. A Termux phone tool logs live 4G readings and raises the alarm, and "
             f"an interactive dashboard replays the test scenarios with adjustable settings.",
         ]),
-        ("fig", FIG / "fig1_anatomy.png", "Fig. 1. A test trip the detector had never seen: a scooter goes down a "
+        ("fig", SUB / "assets" / "dashboard.png", "Fig. 1. The interactive dashboard replaying the test trip of "
+                                                  "Fig. 2: SANKET raised the alarm at 63 s, the link was lost at "
+                                                  "79 s, and all four parts of the order data were already on the "
+                                                  "phone.", 5.4),
+        ("fig", FIG / "fig1_anatomy.png", "Fig. 2. A test trip the detector had never seen: a scooter goes down a "
                                           "basement ramp. SANKET warns 16 s before the link is lost, a static "
                                           "threshold only 2 s before.", 4.8),
     ]))
@@ -160,19 +164,19 @@ def content(M, team, n_tests, n_ticks):
         ("ul", [
             f"The signal falls steeply at entrances. The steepest 10 s slope is below -1.5 dB/s in "
             f"{pct(dec['entry_slope_p_lt_1p5'], 0)} of entries, but in only {bg_lo} to {bg_hi} of normal riding "
-            f"(Fig. 2).",
+            f"(Fig. 3).",
             f"There is a physical limit. Only {pct(h['physical_ceiling_10s'], 0)} of entries leave 10 s between the "
             f"entrance and the loss ({pct(ride['p_entry_to_loss_ge10'], 0)} for scooter ramps), so no method that "
             f"reads only the signal can reach 85% at 10 s.",
         ]),
-        ("fig", FIG / "fig2_decay.png", "Fig. 2. How fast the signal falls at entrances compared with normal riding "
+        ("fig", FIG / "fig2_decay.png", "Fig. 3. How fast the signal falls at entrances compared with normal riding "
                                         "(left), and how much time each kind of entry leaves before the loss (right).",
          5.0),
         ("ul", [
             f"On unseen data SANKET warned at least 10 s ahead in {pct(sk['sim']['recall10'])} of entries (95% "
             f"confidence interval {pct(ci[0])} to {pct(ci[1])}), against {pct(th['sim']['recall10'])} for a static "
             f"threshold, with {sk['real']['fa_per_h']:.2f} false alarms per hour on real rides. It leads every other "
-            f"method when false alarms are kept low (table, Fig. 3).",
+            f"method when false alarms are kept low (table, Fig. 4).",
         ]),
         ("table", ["Detector (tuned on calibration data)", "Warned ≥\u00a010\u00a0s ahead", "Silent when no loss followed",
                    "False alarms per hour (real rides)", "Critical data saved"], table_rows),
@@ -180,18 +184,18 @@ def content(M, team, n_tests, n_ticks):
             f"The critical order data (order token, customer details and route) needs only {crit:.0f} s of warning "
             f"(enough in 99% of test entries); map tiles need {req['T3 offline map tiles']:.0f} s. SANKET's alarms "
             f"got the critical data onto the phone before the loss in {pct(e2e['sanket']['critical_data_saved'])} of "
-            f"entries, against {pct(e2e['threshold']['critical_data_saved'])} for the threshold (Fig. 4).",
+            f"entries, against {pct(e2e['threshold']['critical_data_saved'])} for the threshold (Fig. 5).",
             f"Checking a neighbour cell raised detection at 1 false alarm per hour from "
             f"{pct(de['without_common_mode'])} to {pct(de['with_common_mode'])}. RSRQ did not help: it only "
             f"drops sharply near the noise floor.",
             f"With dead-zone memory, entries warned at least 10 s ahead rose from {pct(fleet[0]['hybrid'], 0)} on "
             f"day 1 to {pct(fleet[-1]['hybrid'], 0)} on day {len(fleet)}, above the 85% target from day "
-            f"{first_day_ok} (Fig. 5).",
+            f"{first_day_ok} (Fig. 6).",
         ]),
-        ("fig", FIG / "fig3_tradeoff.png", "Fig. 3. Detection against false alarms on unseen data. The large markers "
+        ("fig", FIG / "fig3_tradeoff.png", "Fig. 4. Detection against false alarms on unseen data. The large markers "
                                            "are the settings chosen on calibration data.", 3.7),
         ("figrow", [(FIG / "fig5_prefetch_small.png", 2.8), (FIG / "fig6_fleet_small.png", 2.8)],
-         "Fig. 4 (left): downloads finished before the loss, by warning time. Fig. 5 (right): dead-zone memory over "
+         "Fig. 5 (left): downloads finished before the loss, by warning time. Fig. 6 (right): dead-zone memory over "
          "7 days."),
     ]))
     S.append(("What we learnt..", [
@@ -358,6 +362,24 @@ def extract_logos():
     terna.save(SUB / "assets" / "terna_logo.png")
 
 
+def screenshot_dashboard():
+    """Fig. 1: the offline dashboard at rest (end of the featured trip), cropped to the top panels."""
+    if not Path(CHROME).exists():
+        raise SystemExit("Google Chrome not found; it is needed for the dashboard screenshot and the PDF")
+    raw = SUB / "build" / "dashboard_full.png"
+    raw.parent.mkdir(exist_ok=True)
+    if raw.exists():
+        raw.unlink()
+    page = (ROOT / "web" / "SANKET_dashboard.html").resolve().as_uri()
+    subprocess.run([CHROME, "--headless=new", "--disable-gpu", "--hide-scrollbars", "--force-device-scale-factor=2",
+                    "--window-size=1200,860", "--virtual-time-budget=4000", f"--screenshot={raw}", page],
+                   capture_output=True, text=True, timeout=180)
+    if not raw.exists():
+        raise SystemExit("dashboard screenshot failed")
+    im = Image.open(raw)
+    im.crop((0, 0, im.width, round(im.height * 575 / 860))).save(SUB / "assets" / "dashboard.png", optimize=True)
+
+
 def esc(s, mark=True):
     s = html.escape(s)
     if mark and "[" in s:
@@ -497,9 +519,9 @@ def portal_boxes(M, team, n_tests, n_ticks):
         f"We also wrote the detector in JavaScript and in Java for Android. Both give exactly the same output as the "
         f"Python version on all {n_ticks:,} reference readings. A phone tool built on Termux logs live 4G readings "
         f"and raises the alarm, and an interactive dashboard replays the test scenarios with adjustable settings.\n\n"
-        "The attached PDF has the evidence: a sample run (Fig. 1), the signal measurements (Fig. 2), the comparison of "
-        "all five detectors (table and Fig. 3), the download timing (Fig. 4) and the dead-zone memory results "
-        "(Fig. 5).")
+        "The attached PDF has the evidence: a dashboard screenshot (Fig. 1), a sample run (Fig. 2), the signal measurements (Fig. 3), the comparison of "
+        "all five detectors (table and Fig. 4), the download timing (Fig. 5) and the dead-zone memory results "
+        "(Fig. 6).")
     box[8] = (
         f"On data the detectors had never seen, SANKET warned at least 10 seconds before the loss in "
         f"{pct(sk['sim']['recall10'])} of basement entries, against {pct(th['sim']['recall10'])} for a static "
@@ -542,9 +564,9 @@ def _plain(blocks):
         elif blk[0] == "ul":
             lines.extend("• " + x for x in blk[1])
         elif blk[0] == "fig":
-            lines.append(f"[Picture: results/figures/{blk[1].name}]  {blk[2]}")
+            lines.append(f"[Picture: {blk[1].relative_to(ROOT).as_posix()}]  {blk[2]}")
         elif blk[0] == "figrow":
-            lines.append("[Pictures: " + ", ".join(f"results/figures/{p.name}" for p, _ in blk[1]) + f"]  {blk[2]}")
+            lines.append("[Pictures: " + ", ".join(p.relative_to(ROOT).as_posix() for p, _ in blk[1]) + f"]  {blk[2]}")
         elif blk[0] == "table":
             lines.append("[Table]")
             lines.extend("  |  ".join(r) for r in [blk[1]] + blk[2])
@@ -588,6 +610,7 @@ def main():
     n_tests, n_ticks = test_count(), golden_ticks()
     sections = content(M, team, n_tests, n_ticks)
     extract_logos()
+    screenshot_dashboard()
     build_docx(sections, team, date_text, SUB / f"{OUT}.docx")
     build_dir = SUB / "build"
     build_dir.mkdir(exist_ok=True)
