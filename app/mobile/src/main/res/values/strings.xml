@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">SANKET</string>
+    <string name="tagline">Saves your downloads before the signal drops in lifts and basements.</string>
+
+    <string name="status_off">Protection is off</string>
+    <string name="off_hint">Turn protection on, or start a download, and SANKET watches the signal for you.</string>
+    <string name="status_clear">Signal steady</string>
+    <string name="status_watch">Watching: the signal may change</string>
+    <string name="status_protect">Signal may drop soon. Your downloads are saved.</string>
+    <string name="status_offline">No signal. Downloads will continue when it is back.</string>
+    <string name="demo_prefix">Demo, %1$d s: %2$s</string>
+    <string name="risk_line">Chance of no signal in %2$d s: %1$d%%</string>
+    <string name="ttl_line">Signal may drop in about %d s.</string>
+
+    <string name="start_protection">Start protection</string>
+    <string name="stop_protection">Stop protection</string>
+    <string name="download_file">Protected download</string>
+    <string name="download">Download</string>
+    <string name="demo">Demo trip</string>
+    <string name="downloads">Downloads</string>
+    <string name="no_downloads">No downloads yet. Tap Protected download, or share a link to SANKET from any app.</string>
+    <string name="download_row">%1$s · %2$s\n%3$s</string>
+    <string name="link_hint">https://</string>
+    <string name="only_https">Only https:// links can be downloaded safely.</string>
+    <string name="remove_download">Remove this download and its saved part?</string>
+    <string name="remove">Remove</string>
+
+    <string name="transfer_queued">Queued</string>
+    <string name="transfer_running">Downloading</string>
+    <string name="transfer_resuming">Resuming from %s</string>
+    <string name="transfer_retrying">Connection dropped. Trying again.</string>
+    <string name="transfer_waiting">Waiting for signal. %s saved; it will continue by itself.</string>
+    <string name="transfer_saved">Saved to Downloads.</string>
+    <plurals name="transfer_saved_resumed">
+        <item quantity="one">Saved to Downloads. Resumed once without losing progress.</item>
+        <item quantity="other">Saved to Downloads. Resumed %d times without losing progress.</item>
+    </plurals>
+    <string name="transfer_failed">Stopped: the server answered %d.</string>
+
+    <string name="places">Places</string>
+    <string name="places_empty">No places yet. SANKET remembers a place after it loses signal there on two separate visits.</string>
+    <string name="place_row">%1$s · network %2$s · %3$d%% of visits lost signal · %4$s%5$s</string>
+    <string name="place_note_title">Note for this place</string>
+    <string name="note_hint">For example: use gate 3, lift B has no signal</string>
+    <string name="save">Save</string>
+    <string name="forget_place">Forget place</string>
+    <string name="kind_basement">Basement</string>
+    <string name="kind_lift">Lift</string>
+    <string name="kind_indoor">Indoors</string>
+    <string name="kind_unknown">Place</string>
+    <string name="outage_typical">usually back in %d s</string>
+    <string name="outage_unknown">back time not known yet</string>
+    <string name="place_known">Known dead zone here: %1$s, %2$s.</string>
+    <string name="place_note">Note: %s</string>
+
+    <string name="safety_log">Safety log</string>
+    <string name="share">Share</string>
+    <string name="close">Close</string>
+
+    <string name="privacy">Privacy</string>
+    <string name="consent_title">Before you start</string>
+    <string name="consent_agree">I agree</string>
+    <string name="not_now">Not now</string>
+    <string name="privacy_text">SANKET watches your phone\'s signal so it can save your downloads before the signal drops.\n\nWhat it reads: the signal of each SIM, whether the internet works, air pressure (to notice lifts) and your location while protection is on.\n\nWhere it goes: nowhere. Everything stays on this phone, encrypted with a key that cannot leave the phone. Apart from the downloads you start, SANKET sends nothing to any server.\n\nWhat it keeps: places where you lost signal (rounded to about 11 m and forgotten after some weeks without new losses) and a safety log of losses for 30 days.\n\nYou can delete everything at any time under Privacy.</string>
+    <string name="delete_everything">Delete my data</string>
+    <string name="delete_confirm">Delete all places, notes, the safety log and unfinished downloads from this phone? This cannot be undone.</string>
+    <string name="delete">Delete</string>
+    <string name="deleted">All SANKET data on this phone was deleted.</string>
+    <string name="footer">Everything SANKET learns stays on this phone, encrypted. No account, no uploads.</string>
+
+    <string name="killed_title">Protection was stopped</string>
+    <string name="killed_text">Your phone stopped SANKET in the background, probably to save battery. To keep protection on, allow SANKET to run in the background in the battery settings.</string>
+    <string name="open_settings">Open settings</string>
+
+    <string name="channel_status">Protection status</string>
+    <string name="channel_alerts">Signal alerts</string>
+    <string name="alert_drop_title">Signal may drop soon</string>
+    <string name="alert_drop_text">Your downloads are saved and will continue by themselves when the signal is back.</string>
+    <plurals name="alert_long_title">
+        <item quantity="one">You were offline for %d minute</item>
+        <item quantity="other">You were offline for %d minutes</item>
+    </plurals>
+    <string name="alert_long_text">If anything happened, the safety log in SANKET has the times and places.</string>
+
+    <string name="demo_sim">Demo trip (scooter down a basement ramp)</string>
+    <string name="sim_unknown">SIM</string>
+    <string name="sim_data_suffix">" (mobile data)"</string>
+    <string name="sim_lte">4G %d dBm</string>
+    <string name="sim_quality">, quality %d dB</string>
+    <string name="sim_no_4g">no 4G reading</string>
+    <string name="sim_nr">, 5G %d dBm</string>
+    <string name="sim_hint">Tip: %s has better signal here. You can switch mobile data to it in Settings.</string>
+    <string name="net_ok">Internet: working</string>
+    <string name="net_ok_ms">Internet: working (responds in %d ms)</string>
+    <string name="net_slow">Internet: slowing down</string>
+    <string name="net_no_internet">Internet: connected but not working. Check your data pack or Wi-Fi login.</string>
+    <string name="net_none">Internet: no network</string>
+    <string name="move_up">Movement: going up fast (%.1f m/s), maybe a lift</string>
+    <string name="move_down">Movement: going down fast (%.1f m/s), maybe a lift or a ramp</string>
+    <string name="move_level">Movement: level</string>
+    <string name="phone_profile">This phone refreshes signal about every %1$.1f s (noise about %2$.1f dB).</string>
+    <string name="phone_learning">Learning how this phone reports signal.</string>
+    <string name="notice_ready">Offline notice for dispatch is ready (sending it needs the fleet server).</string>
+</resources>

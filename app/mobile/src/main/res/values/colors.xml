@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="icon_background">#1F5FBF</color>
+    <color name="card">#EEF2F7</color>
+    <color name="status_off">#5B6472</color>
+    <color name="status_clear">#17794A</color>
+    <color name="status_watch">#8A5A00</color>
+    <color name="status_protect">#B4400B</color>
+    <color name="status_offline">#B42318</color>
+</resources>

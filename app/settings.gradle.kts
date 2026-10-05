@@ -15,4 +15,4 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "sanket"
-include(":core")
+include(":core", ":mobile")
