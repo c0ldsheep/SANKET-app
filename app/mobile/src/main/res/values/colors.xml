@@ -1,10 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Light theme. Neutrals carry the screen; blue is only for actions; the status colours always
+     come with words. Dark values live in values-night/colors.xml. -->
 <resources>
-    <color name="icon_background">#1F5FBF</color>
-    <color name="card">#EEF2F7</color>
+    <color name="bg">#F5F6F8</color>
+    <color name="surface">#FFFFFF</color>
+    <color name="surface_alt">#EDF0F4</color>
+    <color name="outline">#DCE1E8</color>
+    <color name="text">#141A23</color>
+    <color name="text_2">#47505D</color>
+    <color name="text_3">#687180</color>
+
+    <color name="accent">#1D5FD1</color>
+    <color name="on_accent">#FFFFFF</color>
+    <color name="accent_tint">#E3ECFC</color>
+    <color name="accent_ripple">#331D5FD1</color>
+    <color name="on_accent_ripple">#33FFFFFF</color>
+    <color name="ripple">#1F141A23</color>
+
     <color name="status_off">#5B6472</color>
-    <color name="status_clear">#17794A</color>
-    <color name="status_watch">#8A5A00</color>
-    <color name="status_protect">#B4400B</color>
+    <color name="status_off_tint">#EDF0F4</color>
+    <color name="status_clear">#0F7A3B</color>
+    <color name="status_clear_tint">#E4F4EA</color>
+    <color name="status_watch">#8A5800</color>
+    <color name="status_watch_tint">#FBF0D9</color>
+    <color name="status_protect">#B3420C</color>
+    <color name="status_protect_tint">#FCE8DE</color>
     <color name="status_offline">#B42318</color>
+    <color name="status_offline_tint">#FBE6E4</color>
+
+    <color name="icon_background">#1D5FD1</color>
 </resources>

@@ -9,9 +9,12 @@
     <!-- Lists the active SIMs so each one's signal can be read (dual SIM). -->
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+    <!-- Lets unfinished downloads continue by themselves after the phone restarts. -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <uses-feature android:name="android.hardware.telephony" android:required="false" />
     <uses-feature android:name="android.hardware.sensor.barometer" android:required="false" />
@@ -47,5 +50,25 @@
             android:name=".GuardService"
             android:exported="false"
             android:foregroundServiceType="location|dataSync" />
+
+        <service
+            android:name=".ResumeJob"
+            android:exported="false"
+            android:permission="android.permission.BIND_JOB_SERVICE" />
+
+        <service
+            android:name=".ProtectionTile"
+            android:exported="true"
+            android:icon="@drawable/ic_notification"
+            android:label="@string/tile_label"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+        </service>
+
+        <receiver
+            android:name=".StopReceiver"
+            android:exported="false" />
     </application>
 </manifest>

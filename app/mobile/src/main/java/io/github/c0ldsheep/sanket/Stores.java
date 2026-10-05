@@ -9,7 +9,10 @@ import io.github.c0ldsheep.sanket.core.ZoneMemory;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -21,6 +24,7 @@ final class Stores {
     private static final String ZONES = "places.bin";
     private static final String LOG = "safety-log.bin";
     private static final String TRANSFERS = "downloads.bin";
+    private static final String CARRIERS = "carrier_names";
 
     private final Context ctx;
 
@@ -118,9 +122,13 @@ final class Stores {
             JSONArray all = new JSONArray();
             for (Transfers.Item it : items) {
                 all.put(new JSONObject()
-                        .put("id", it.id).put("url", it.url).put("name", it.name).put("size", it.size).put("done", it.done)
-                        .put("etag", it.etag).put("modified", it.lastModified).put("mime", it.mime)
-                        .put("state", it.state.name()).put("message", it.message).put("resumes", it.resumes));
+                        .put("id", it.id).put("url", it.url).put("name", it.name).put("uri", it.uri)
+                        .put("size", it.size).put("durable", it.durable).put("etag", it.etag)
+                        .put("modified", it.lastModified).put("mime", it.mime).put("state", it.state.name())
+                        .put("problem", it.problem.name()).put("code", it.code).put("retryAt", it.retryAtMs)
+                        .put("need", it.needBytes).put("free", it.freeBytes).put("attempts", it.attempts)
+                        .put("resumes", it.resumes).put("wifiOnly", it.wifiOnly).put("created", it.createdMs)
+                        .put("finished", it.finishedMs));
             }
             write(TRANSFERS, all.toString());
         } catch (JSONException e) {
@@ -136,15 +144,24 @@ final class Stores {
             JSONArray all = new JSONArray(text);
             for (int i = 0; i < all.length(); i++) {
                 JSONObject o = all.getJSONObject(i);
-                Transfers.Item it = new Transfers.Item(o.getString("id"), o.getString("url"), o.getString("name"));
+                Transfers.Item it = new Transfers.Item(o.getString("id"), o.getString("url"), o.getString("name"),
+                        o.optLong("created", System.currentTimeMillis()));
+                it.uri = o.optString("uri", "");
                 it.size = o.optLong("size", -1L);
-                it.done = o.optLong("done", 0L);
+                it.durable = o.optLong("durable", 0L);
                 it.etag = o.optString("etag", "");
                 it.lastModified = o.optString("modified", "");
                 it.mime = o.optString("mime", "");
                 it.state = state(o.optString("state"));
-                it.message = o.optString("message", "");
+                it.problem = problem(o.optString("problem"));
+                it.code = o.optInt("code", 0);
+                it.retryAtMs = o.optLong("retryAt", 0L);
+                it.needBytes = o.optLong("need", 0L);
+                it.freeBytes = o.optLong("free", 0L);
+                it.attempts = o.optInt("attempts", 0);
                 it.resumes = o.optInt("resumes", 0);
+                it.wifiOnly = o.optBoolean("wifiOnly", false);
+                it.finishedMs = o.optLong("finished", 0L);
                 items.add(it);
             }
         } catch (JSONException e) {
@@ -152,6 +169,27 @@ final class Stores {
             items.clear();
         }
         return items;
+    }
+
+    /** Operator names seen on this phone's SIMs, by network code, so places can say "Jio" instead of a number. */
+    Map<String, String> loadCarrierNames() {
+        Map<String, String> names = new HashMap<>();
+        String text = prefs().getString(CARRIERS, null);
+        if (text == null) return names;
+        try {
+            JSONObject o = new JSONObject(text);
+            for (Iterator<String> keys = o.keys(); keys.hasNext(); ) {
+                String code = keys.next();
+                names.put(code, o.optString(code, ""));
+            }
+        } catch (JSONException e) {
+            Log.w(TAG, "Operator names unreadable", e);
+        }
+        return names;
+    }
+
+    void saveCarrierNames(Map<String, String> names) {
+        prefs().edit().putString(CARRIERS, new JSONObject(names).toString()).apply();
     }
 
     /** Deletes every file, the encryption key and all settings. */
@@ -205,6 +243,14 @@ final class Stores {
             return Transfers.State.valueOf(name);
         } catch (IllegalArgumentException e) {
             return Transfers.State.WAITING;
+        }
+    }
+
+    private static Transfers.Problem problem(String name) {
+        try {
+            return Transfers.Problem.valueOf(name);
+        } catch (IllegalArgumentException e) {
+            return Transfers.Problem.NONE;
         }
     }
 }

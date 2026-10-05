@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingHorizontal="24dp"
+    android:paddingTop="8dp">
+
+    <TextView
+        style="@style/Text.Caption"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:labelFor="@+id/link"
+        android:text="@string/download_link_label"
+        android:textColor="@color/text_2" />
+
+    <EditText
+        android:id="@+id/link"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:importantForAutofill="no"
+        android:inputType="textUri"
+        android:minHeight="48dp"
+        android:textColor="@color/text"
+        android:textSize="15sp" />
+
+    <CheckBox
+        android:id="@+id/wifiOnly"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:minHeight="48dp"
+        android:text="@string/download_wifi_only"
+        android:textColor="@color/text"
+        android:textSize="15sp" />
+
+    <TextView
+        android:id="@+id/help"
+        style="@style/Text.Caption"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:text="@string/download_help" />
+</LinearLayout>

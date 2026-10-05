@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- An 8 dp grid: tighter inside a group than between groups. One corner radius for every surface. -->
+<resources>
+    <dimen name="gutter">20dp</dimen>
+    <dimen name="section_gap">32dp</dimen>
+    <dimen name="group_gap">12dp</dimen>
+    <dimen name="card_padding">20dp</dimen>
+    <dimen name="row_padding">16dp</dimen>
+    <dimen name="radius">16dp</dimen>
+    <dimen name="button_height">52dp</dimen>
+    <dimen name="icon">24dp</dimen>
+</resources>

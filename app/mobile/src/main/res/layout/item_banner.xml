@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Something the user should fix, with the button that fixes it. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="@dimen/group_gap"
+    android:orientation="vertical"
+    android:paddingHorizontal="@dimen/row_padding"
+    android:paddingTop="@dimen/row_padding"
+    android:paddingBottom="6dp">
+
+    <TextView
+        android:id="@+id/text"
+        style="@style/Text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:drawablePadding="12dp" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:gravity="end"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/dismiss"
+            style="@style/Button.Text"
+            android:layout_width="wrap_content"
+            android:text="@string/not_now"
+            android:textColor="@color/text_2"
+            android:visibility="gone" />
+
+        <Button
+            android:id="@+id/action"
+            style="@style/Button.Text"
+            android:layout_width="wrap_content"
+            android:layout_marginStart="4dp" />
+    </LinearLayout>
+</LinearLayout>

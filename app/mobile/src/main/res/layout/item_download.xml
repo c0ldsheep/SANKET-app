@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="@dimen/group_gap"
+    android:background="@drawable/card"
+    android:orientation="vertical"
+    android:paddingHorizontal="@dimen/row_padding"
+    android:paddingTop="@dimen/row_padding"
+    android:paddingBottom="8dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:layout_width="@dimen/icon"
+            android:layout_height="@dimen/icon"
+            android:importantForAccessibility="no"
+            android:src="@drawable/ic_file"
+            android:tint="@color/text_2" />
+
+        <TextView
+            android:id="@+id/name"
+            style="@style/Text.Title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_weight="1"
+            android:ellipsize="middle"
+            android:singleLine="true" />
+
+        <TextView
+            android:id="@+id/amount"
+            style="@style/Text.Caption"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:fontFeatureSettings="tnum" />
+    </LinearLayout>
+
+    <ProgressBar
+        android:id="@+id/progress"
+        style="@android:style/Widget.Material.ProgressBar.Horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="6dp"
+        android:layout_marginTop="12dp"
+        android:max="1000"
+        android:progressDrawable="@drawable/progress_bar" />
+
+    <TextView
+        android:id="@+id/status"
+        style="@style/Text.Caption"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:textColor="@color/text_2" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:gravity="end"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/secondary"
+            style="@style/Button.Text"
+            android:layout_width="wrap_content"
+            android:textColor="@color/text_2" />
+
+        <Button
+            android:id="@+id/primary"
+            style="@style/Button.Text"
+            android:layout_width="wrap_content"
+            android:layout_marginStart="4dp" />
+    </LinearLayout>
+</LinearLayout>

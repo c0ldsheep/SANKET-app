@@ -2,9 +2,7 @@ package io.github.c0ldsheep.sanket;
 
 import android.Manifest;
 import android.app.Notification;
-import android.app.NotificationChannel;
 import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
@@ -20,13 +18,16 @@ import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkCapabilities;
+import android.os.BatteryManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.IBinder;
+import android.os.PowerManager;
 import android.os.SystemClock;
 import android.util.Log;
 import io.github.c0ldsheep.sanket.core.GuardPolicy;
+import java.util.List;
 
 /**
  * Runs protection in the background while the user wants it, or while downloads are active. It
@@ -38,13 +39,17 @@ public final class GuardService extends Service implements Engine.Listener {
     static final String ACTION_START = "io.github.c0ldsheep.sanket.action.START";
     static final String ACTION_DOWNLOADS = "io.github.c0ldsheep.sanket.action.DOWNLOADS";
     static final String ACTION_DEMO = "io.github.c0ldsheep.sanket.action.DEMO";
+    static final String ACTION_STOP_DEMO = "io.github.c0ldsheep.sanket.action.STOP_DEMO";
     private static final String TAG = "SanketService";
-    private static final String CHANNEL_STATUS = "status";
-    private static final String CHANNEL_ALERTS = "alerts";
-    private static final int NOTE_STATUS = 1;
-    private static final int NOTE_ALERT = 2;
     private static final long IDLE_STOP_MS = 120_000L;
     private static final long ALIVE_EVERY_MS = 15_000L;
+    private static final long NOTIFY_EVERY_MS = 2_000L;
+    private static final long POWER_EVERY_MS = 30_000L;
+    private static final long ALERT_GAP_MS = 3L * 60L * 1000L;
+    private static final int LOW_BATTERY_PERCENT = 15;
+
+    /** The running instance, so the notification and the tile can stop protection. */
+    private static volatile GuardService current;
 
     private Engine engine;
     private HandlerThread worker;
@@ -52,13 +57,17 @@ public final class GuardService extends Service implements Engine.Listener {
     private SensorManager sensors;
     private LocationManager locations;
     private ConnectivityManager connectivity;
+    private volatile boolean manual;
     // The fields below are used only on the worker thread.
     private boolean active;
     private boolean demo;
-    private boolean manual;
     private boolean inputs;
+    private boolean lowPower;
     private long idleSince = -1L;
     private long aliveWrittenAt;
+    private long notifiedAt;
+    private long powerCheckedAt = Long.MIN_VALUE / 2;
+    private long alertedAt = Long.MIN_VALUE / 2;
 
     private final Runnable tick = this::onTick;
 
@@ -94,27 +103,42 @@ public final class GuardService extends Service implements Engine.Listener {
         @Override
         public void onCapabilitiesChanged(Network n, NetworkCapabilities caps) {
             engine.onNetwork(true, caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED),
-                    caps.hasTransport(NetworkCapabilities.TRANSPORT_WIFI));
+                    caps.hasTransport(NetworkCapabilities.TRANSPORT_WIFI),
+                    caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_NOT_METERED));
         }
 
         @Override
-        public void onLost(Network n) { engine.onNetwork(false, false, false); }
+        public void onLost(Network n) { engine.onNetwork(false, false, false, false); }
     };
 
     static void send(Context ctx, String action) {
         ctx.startForegroundService(new Intent(ctx, GuardService.class).setAction(action));
     }
 
+    /** Stops everything at once, for "delete my data". */
     static void stop(Context ctx) { ctx.stopService(new Intent(ctx, GuardService.class)); }
+
+    /** True while the user's protection is on. */
+    static boolean protecting() {
+        GuardService s = current;
+        return s != null && s.manual;
+    }
+
+    /** Turns protection off, from the screen, the notification or the tile. Downloads keep going. */
+    static void requestStop() {
+        GuardService s = current;
+        if (s != null) s.handler.post(s::stopProtection);
+    }
 
     @Override
     public void onCreate() {
         super.onCreate();
+        current = this;
         engine = Engine.get(this);
         sensors = getSystemService(SensorManager.class);
         locations = getSystemService(LocationManager.class);
         connectivity = getSystemService(ConnectivityManager.class);
-        createChannels();
+        Notes.createChannels(this);
         worker = new HandlerThread("sanket-guard");
         worker.start();
         handler = new Handler(worker.getLooper());
@@ -124,22 +148,29 @@ public final class GuardService extends Service implements Engine.Listener {
     public int onStartCommand(Intent intent, int flags, int startId) {
         String action = intent == null || intent.getAction() == null ? ACTION_START : intent.getAction();
         goForeground();
-        boolean wantDemo = ACTION_DEMO.equals(action);
-        boolean wantManual = ACTION_START.equals(action);
+        if (ACTION_START.equals(action)) manual = true;
         handler.post(() -> {
-            if (wantManual) manual = true;
-            if (!active || wantDemo != demo) {
-                begin(wantDemo);
-            } else if (!demo) {
+            if (ACTION_DEMO.equals(action)) {
+                begin(true);
+            } else if (ACTION_STOP_DEMO.equals(action)) {
+                if (demo) endDemo();
+                else if (!active) stopSelf();   // the demo had already ended
+            } else if (!active || demo) {
+                if (!demo) begin(false);
+                else engine.setProtecting(manual);
+            } else {
+                engine.setProtecting(manual);
                 unregisterInputs();   // permissions may have changed since the last start
                 registerInputs();
             }
+            ProtectionTile.refresh(this);
         });
         return START_NOT_STICKY;
     }
 
     @Override
     public void onDestroy() {
+        current = null;
         Handler h = handler;
         h.post(() -> {
             h.removeCallbacks(tick);
@@ -150,11 +181,14 @@ public final class GuardService extends Service implements Engine.Listener {
         engine.markStopped();
         worker.quitSafely();
         stopForeground(STOP_FOREGROUND_REMOVE);
+        ProtectionTile.refresh(this);
         super.onDestroy();
     }
 
     @Override
     public void onTimeout(int startId, int fgsType) {
+        // Android 15 limits background data work to six hours a day. Unfinished downloads
+        // continue later through ResumeJob.
         Log.i(TAG, "Foreground time limit reached; stopping");
         stopSelf();
     }
@@ -164,16 +198,18 @@ public final class GuardService extends Service implements Engine.Listener {
 
     @Override
     public void onLevelChanged(GuardPolicy.Level level, boolean downloadsActive) {
-        NotificationManager nm = getSystemService(NotificationManager.class);
-        if (nm != null) nm.notify(NOTE_STATUS, statusNotification(statusText(level)));
-        if (level == GuardPolicy.Level.PROTECT && downloadsActive) {
-            alert(getString(R.string.alert_drop_title), getString(R.string.alert_drop_text));
+        notifyStatus();
+        long now = SystemClock.elapsedRealtime();
+        if (level == GuardPolicy.Level.PROTECT && downloadsActive && !demo && now - alertedAt >= ALERT_GAP_MS) {
+            alertedAt = now;
+            Notes.alert(this, getString(R.string.alert_drop_title), getString(R.string.alert_drop_text));
         }
     }
 
     @Override
     public void onLongOutage(int minutes) {
-        alert(getResources().getQuantityString(R.plurals.alert_long_title, minutes, minutes), getString(R.string.alert_long_text));
+        Notes.alert(this, getResources().getQuantityString(R.plurals.alert_long_title, minutes, minutes),
+                getString(R.string.alert_long_text));
     }
 
     private void begin(boolean demoMode) {
@@ -182,19 +218,39 @@ public final class GuardService extends Service implements Engine.Listener {
         demo = demoMode;
         active = true;
         idleSince = -1L;
-        engine.start(demoMode, this);
+        engine.start(demoMode, manual, this);
         if (!demoMode) registerInputs();
         handler.post(tick);
+    }
+
+    /** After the demo, real protection carries on if it was on, or while downloads need it. */
+    private void endDemo() {
+        if (manual || engine.transfers.busy()) {
+            begin(false);
+        } else {
+            stopSelf();
+        }
+    }
+
+    private void stopProtection() {
+        manual = false;
+        engine.setProtecting(false);
+        if (demo || engine.transfers.busy()) {
+            notifyStatus();
+        } else {
+            stopSelf();
+        }
+        ProtectionTile.refresh(this);
     }
 
     private void onTick() {
         if (!active) return;
         if (!engine.tick()) {
-            stopSelf();
+            endDemo();
             return;
         }
+        long now = SystemClock.elapsedRealtime();
         if (!demo && !manual) {
-            long now = SystemClock.elapsedRealtime();
             if (engine.transfers.busy()) {
                 idleSince = -1L;
             } else if (idleSince < 0L) {
@@ -204,11 +260,39 @@ public final class GuardService extends Service implements Engine.Listener {
                 return;
             }
         }
-        if (!demo && SystemClock.elapsedRealtime() - aliveWrittenAt > ALIVE_EVERY_MS) {
-            aliveWrittenAt = SystemClock.elapsedRealtime();
+        if (!demo && now - aliveWrittenAt > ALIVE_EVERY_MS) {
+            aliveWrittenAt = now;
             engine.markAlive();
         }
+        if (!demo && now - powerCheckedAt > POWER_EVERY_MS) {
+            powerCheckedAt = now;
+            checkPower();
+        }
+        if (now - notifiedAt >= NOTIFY_EVERY_MS) notifyStatus();
         handler.postDelayed(tick, demo ? 250L : 1000L);
+    }
+
+    /** In Battery Saver or below 15%, SANKET stops using GPS; network location is enough for places. */
+    private void checkPower() {
+        PowerManager pm = getSystemService(PowerManager.class);
+        BatteryManager bm = getSystemService(BatteryManager.class);
+        boolean saver = pm != null && pm.isPowerSaveMode();
+        int percent = bm == null ? 100 : bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY);
+        boolean charging = bm != null && bm.isCharging();
+        boolean low = saver || (percent > 0 && percent <= LOW_BATTERY_PERCENT && !charging);
+        if (low == lowPower) return;
+        lowPower = low;
+        engine.setLowPower(low);
+        if (inputs) {
+            unregisterInputs();
+            registerInputs();
+        }
+    }
+
+    private void notifyStatus() {
+        notifiedAt = SystemClock.elapsedRealtime();
+        NotificationManager nm = getSystemService(NotificationManager.class);
+        if (nm != null) nm.notify(Notes.STATUS_ID, Notes.status(this, engine.snapshot(), engine.transfers));
     }
 
     private void registerInputs() {
@@ -219,14 +303,19 @@ public final class GuardService extends Service implements Engine.Listener {
         if (connectivity != null) connectivity.registerDefaultNetworkCallback(network, handler);
         if (locations != null
                 && checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            try {
-                for (String provider : new String[] {LocationManager.GPS_PROVIDER, LocationManager.NETWORK_PROVIDER}) {
-                    if (locations.isProviderEnabled(provider)) {
-                        locations.requestLocationUpdates(provider, 5_000L, 10f, location, worker.getLooper());
-                    }
+            List<String> available = locations.getAllProviders();
+            String[] wanted = lowPower
+                    ? new String[] {LocationManager.NETWORK_PROVIDER, LocationManager.PASSIVE_PROVIDER}
+                    : new String[] {LocationManager.GPS_PROVIDER, LocationManager.NETWORK_PROVIDER,
+                            LocationManager.PASSIVE_PROVIDER};
+            // Registered even while switched off, so updates start as soon as Location is turned on.
+            for (String provider : wanted) {
+                if (!available.contains(provider)) continue;
+                try {
+                    locations.requestLocationUpdates(provider, 5_000L, 10f, location, worker.getLooper());
+                } catch (SecurityException | IllegalArgumentException e) {
+                    Log.w(TAG, "Location from " + provider + " unavailable", e);
                 }
-            } catch (SecurityException | IllegalArgumentException e) {
-                Log.w(TAG, "Location unavailable", e);
             }
         }
         inputs = true;
@@ -250,63 +339,12 @@ public final class GuardService extends Service implements Engine.Listener {
         if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             type |= ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION;
         }
-        Notification note = statusNotification(getString(R.string.status_clear));
+        Notification note = Notes.status(this, engine.snapshot(), engine.transfers);
         try {
-            startForeground(NOTE_STATUS, note, type);
+            startForeground(Notes.STATUS_ID, note, type);
         } catch (SecurityException e) {
             Log.w(TAG, "Location type refused; continuing without it", e);
-            startForeground(NOTE_STATUS, note, ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC);
-        }
-    }
-
-    private void createChannels() {
-        NotificationManager nm = getSystemService(NotificationManager.class);
-        if (nm == null) return;
-        nm.createNotificationChannel(new NotificationChannel(CHANNEL_STATUS, getString(R.string.channel_status),
-                NotificationManager.IMPORTANCE_LOW));
-        nm.createNotificationChannel(new NotificationChannel(CHANNEL_ALERTS, getString(R.string.channel_alerts),
-                NotificationManager.IMPORTANCE_DEFAULT));
-    }
-
-    private Notification statusNotification(String text) {
-        return new Notification.Builder(this, CHANNEL_STATUS)
-                .setSmallIcon(R.drawable.ic_notification)
-                .setContentTitle(getString(R.string.app_name))
-                .setContentText(text)
-                .setContentIntent(openApp())
-                .setOngoing(true)
-                .setOnlyAlertOnce(true)
-                .build();
-    }
-
-    private void alert(String title, String text) {
-        NotificationManager nm = getSystemService(NotificationManager.class);
-        if (nm == null) return;
-        nm.notify(NOTE_ALERT, new Notification.Builder(this, CHANNEL_ALERTS)
-                .setSmallIcon(R.drawable.ic_notification)
-                .setContentTitle(title)
-                .setContentText(text)
-                .setStyle(new Notification.BigTextStyle().bigText(text))
-                .setContentIntent(openApp())
-                .setAutoCancel(true)
-                .build());
-    }
-
-    private PendingIntent openApp() {
-        Intent open = new Intent(this, MainActivity.class).setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-        return PendingIntent.getActivity(this, 0, open, PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
-    }
-
-    private String statusText(GuardPolicy.Level level) {
-        switch (level) {
-            case WATCH:
-                return getString(R.string.status_watch);
-            case PROTECT:
-                return getString(R.string.status_protect);
-            case OFFLINE:
-                return getString(R.string.status_offline);
-            default:
-                return getString(R.string.status_clear);
+            startForeground(Notes.STATUS_ID, note, ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC);
         }
     }
 }

@@ -1,9 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Dark theme: designed, not inverted. Surfaces get lighter as they come forward; status colours
+     are lighter tones of the same hues so they stay readable on dark backgrounds. -->
 <resources>
-    <color name="card">#1D2430</color>
+    <color name="bg">#0E1115</color>
+    <color name="surface">#161A20</color>
+    <color name="surface_alt">#1E232B</color>
+    <color name="outline">#2B323C</color>
+    <color name="text">#E7EBF0</color>
+    <color name="text_2">#B3BCC8</color>
+    <color name="text_3">#8C97A6</color>
+
+    <color name="accent">#8FB7FF</color>
+    <color name="on_accent">#0B1F45</color>
+    <color name="accent_tint">#1C2A44</color>
+    <color name="accent_ripple">#338FB7FF</color>
+    <color name="on_accent_ripple">#330B1F45</color>
+    <color name="ripple">#1FE7EBF0</color>
+
     <color name="status_off">#A3ACB9</color>
-    <color name="status_clear">#4ADE80</color>
-    <color name="status_watch">#FBBF24</color>
-    <color name="status_protect">#FB923C</color>
-    <color name="status_offline">#F87171</color>
+    <color name="status_off_tint">#1E232B</color>
+    <color name="status_clear">#5BD08A</color>
+    <color name="status_clear_tint">#12261A</color>
+    <color name="status_watch">#F0C04D</color>
+    <color name="status_watch_tint">#2A2210</color>
+    <color name="status_protect">#FF9C66</color>
+    <color name="status_protect_tint">#33190F</color>
+    <color name="status_offline">#FF8A80</color>
+    <color name="status_offline_tint">#351719</color>
 </resources>
