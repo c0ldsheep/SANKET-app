@@ -1,0 +1,659 @@
+<title>SANKET Link Watch</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a signal console. Live readout beside the signal chart, the rider's street-ramp-basement
+   cross-section beneath, then settings, a live tally and the evaluated results. One column on phones. */
+:root {
+  --bg: #eef1f4;
+  --surface: #ffffff;
+  --ink: #12161c;
+  --ink-2: #48525f;
+  --muted: #747f8c;
+  --line: #d9dee5;
+  --accent: #2a78d6;
+  --accent-soft: rgba(42, 120, 214, 0.13);
+  --base: #d9602c;
+  --good: #14803c;
+  --warn: #a96a12;
+  --crit: #c93636;
+  --loss-wash: rgba(201, 54, 54, 0.08);
+  --sky: #e5edf6;
+  --earth: #d5d0c6;
+  --concrete: #b9bec6;
+  --font-display: "Barlow Condensed", "Arial Narrow", "Helvetica Neue", sans-serif;
+  --font-body: "Barlow", "Helvetica Neue", Arial, sans-serif;
+  --font-data: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e1217; --surface: #161b22; --ink: #eef2f6; --ink-2: #b5bec9; --muted: #8a95a2; --line: #2a323c;
+    --accent: #4f95ea; --accent-soft: rgba(79, 149, 234, 0.17); --base: #f0804f; --good: #46c27a; --warn: #e2a845;
+    --crit: #f06464; --loss-wash: rgba(240, 100, 100, 0.11); --sky: #18222e; --earth: #2c2a26; --concrete: #3a4049;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e1217; --surface: #161b22; --ink: #eef2f6; --ink-2: #b5bec9; --muted: #8a95a2; --line: #2a323c;
+  --accent: #4f95ea; --accent-soft: rgba(79, 149, 234, 0.17); --base: #f0804f; --good: #46c27a; --warn: #e2a845;
+  --crit: #f06464; --loss-wash: rgba(240, 100, 100, 0.11); --sky: #18222e; --earth: #2c2a26; --concrete: #3a4049;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5; }
+.wrap { max-width: 1180px; margin: 0 auto; padding-inline: 16px; padding-block: 20px 40px; display: grid;
+        grid-template-columns: minmax(0, 1fr); gap: 16px; }
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; margin: 0; letter-spacing: 0.01em; }
+h1 { font-size: 2.1rem; font-weight: 700; line-height: 1; }
+h2 { font-size: 1.45rem; font-weight: 600; }
+h3 { font-size: 1.05rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-2); }
+p { margin: 0; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; min-width: 0; }
+.eyebrow { font-family: var(--font-display); text-transform: uppercase; letter-spacing: 0.08em; font-size: 0.8rem; color: var(--muted); font-weight: 600; }
+.data { font-family: var(--font-data); font-variant-numeric: tabular-nums; }
+button, select, input { font: inherit; color: inherit; }
+button { cursor: pointer; border: 1px solid var(--line); background: var(--surface); border-radius: 8px; padding: 7px 12px; font-weight: 600; }
+button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+button:hover { border-color: var(--accent); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+select { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 7px 10px; max-width: 100%; }
+
+/* header */
+.top { display: flex; flex-wrap: wrap; gap: 14px 24px; align-items: end; justify-content: space-between; }
+.brand { display: flex; gap: 12px; align-items: center; min-width: 0; }
+.brand svg { flex: none; }
+.brand .sub { color: var(--ink-2); max-width: 60ch; }
+.pick { display: grid; gap: 4px; min-width: min(100%, 360px); }
+.pick label { font-size: 0.85rem; color: var(--muted); }
+
+/* console */
+.console { display: grid; grid-template-columns: minmax(0, 300px) minmax(0, 1fr); gap: 16px; }
+@media (max-width: 860px) { .console { grid-template-columns: minmax(0, 1fr); } }
+.readout { display: grid; gap: 14px; align-content: start; }
+.big { display: flex; align-items: baseline; gap: 8px; }
+.big .num { font-family: var(--font-data); font-size: 2.9rem; font-weight: 500; letter-spacing: -0.02em; line-height: 1; }
+.big .unit { color: var(--muted); font-size: 1rem; }
+.big .num.none { font-family: var(--font-display); font-size: 1.9rem; color: var(--crit); letter-spacing: 0.02em; }
+.bars { display: flex; gap: 3px; align-items: end; height: 26px; margin-left: auto; }
+.bars i { width: 7px; border-radius: 2px; background: var(--line); }
+.bars i:nth-child(1) { height: 30%; } .bars i:nth-child(2) { height: 52%; } .bars i:nth-child(3) { height: 74%; } .bars i:nth-child(4) { height: 100%; }
+.bars i.on { background: var(--ink); }
+.bars.zero i { background: var(--loss-wash); outline: 1px solid var(--crit); }
+.kv { display: grid; grid-template-columns: 1fr auto; gap: 6px 12px; font-size: 0.95rem; }
+.kv dt { color: var(--ink-2); } .kv dd { margin: 0; text-align: right; }
+.meter { height: 6px; background: var(--line); border-radius: 3px; overflow: hidden; }
+.meter b { display: block; height: 100%; width: 0; background: var(--accent); transition: width 0.25s ease; }
+.pill { display: inline-flex; align-items: center; gap: 8px; border-radius: 999px; padding: 6px 12px; font-weight: 600; font-size: 0.95rem;
+        border: 1px solid var(--line); background: var(--bg); }
+.pill::before { content: ""; width: 9px; height: 9px; border-radius: 50%; background: var(--muted); flex: none; }
+.pill.ok::before { background: var(--good); } .pill.watch::before { background: var(--warn); }
+.pill.fire { border-color: var(--accent); background: var(--accent-soft); } .pill.fire::before { background: var(--accent); }
+.pill.cached::before { background: var(--accent); } .pill.lost { border-color: var(--crit); } .pill.lost::before { background: var(--crit); }
+.pill.saved { border-color: var(--good); } .pill.saved::before { background: var(--good); }
+@media (prefers-reduced-motion: no-preference) { .pill.fire { animation: pulse 0.9s ease-in-out 2; } }
+@keyframes pulse { 50% { box-shadow: 0 0 0 6px var(--accent-soft); } }
+.tiers { display: grid; gap: 6px; font-size: 0.9rem; }
+.tier { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; }
+.tier small { color: var(--muted); font-family: var(--font-data); font-size: 0.78rem; }
+.chip { font-size: 0.78rem; font-weight: 600; border-radius: 5px; padding: 1px 7px; border: 1px solid var(--line); color: var(--ink-2); white-space: nowrap; }
+.chip.saved { color: var(--good); border-color: var(--good); } .chip.loading { color: var(--accent); border-color: var(--accent); }
+.chip.failed { color: var(--crit); border-color: var(--crit); }
+
+/* chart */
+.chartcard { display: grid; gap: 10px; }
+.charthead { display: flex; flex-wrap: wrap; gap: 8px 16px; justify-content: space-between; align-items: center; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 0.85rem; color: var(--ink-2); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.key { display: inline-block; width: 14px; height: 3px; border-radius: 2px; }
+.dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; }
+.sq { display: inline-block; width: 9px; height: 9px; border-radius: 2px; }
+svg text { fill: var(--muted); font-family: var(--font-body); font-size: 11px; }
+.player { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.player input[type=range] { flex: 1 1 160px; min-width: 0; accent-color: var(--accent); }
+.player .clock { color: var(--ink-2); min-width: 7ch; text-align: right; }
+.speed { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.speed button { border: 0; border-radius: 0; padding: 6px 10px; }
+.speed button[aria-pressed=true] { background: var(--accent-soft); color: var(--accent); }
+
+/* scene */
+.scene { display: grid; gap: 8px; }
+.outcome { color: var(--ink-2); }
+.outcome strong { color: var(--ink); }
+
+/* settings + tally */
+.tune { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; }
+@media (max-width: 860px) { .tune { grid-template-columns: minmax(0, 1fr); } }
+.settings { display: grid; gap: 12px; }
+.field { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 12px; align-items: center; }
+.field label { font-weight: 500; }
+.field output { font-family: var(--font-data); color: var(--accent); }
+.field input[type=range] { grid-column: 1 / -1; width: 100%; accent-color: var(--accent); }
+.field .hint { grid-column: 1 / -1; font-size: 0.82rem; color: var(--muted); }
+.check { display: flex; gap: 8px; align-items: center; }
+.note { font-size: 0.85rem; color: var(--muted); }
+table { border-collapse: collapse; width: 100%; font-size: 0.92rem; }
+th, td { text-align: right; padding: 7px 8px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+th:first-child, td:first-child { text-align: left; white-space: normal; }
+thead th { font-weight: 600; color: var(--ink-2); font-size: 0.82rem; vertical-align: bottom; }
+td.data { font-family: var(--font-data); font-variant-numeric: tabular-nums; }
+tr.mine td { font-weight: 600; }
+tr.mine td:first-child { color: var(--accent); }
+.scroll { overflow-x: auto; }
+
+/* results */
+.results { display: grid; gap: 14px; }
+.findings { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+@media (max-width: 860px) { .findings { grid-template-columns: minmax(0, 1fr); } }
+.finding { display: grid; gap: 4px; align-content: start; }
+.finding .fig { font-family: var(--font-display); font-size: 2rem; font-weight: 700; line-height: 1.05; }
+.finding p { color: var(--ink-2); max-width: 60ch; }
+footer { color: var(--muted); font-size: 0.85rem; display: grid; gap: 4px; max-width: 90ch; }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <svg width="46" height="46" viewBox="0 0 46 46" aria-hidden="true">
+        <rect x="4" y="27" width="6" height="13" rx="1.5" fill="var(--accent)"></rect>
+        <rect x="13" y="20" width="6" height="20" rx="1.5" fill="var(--accent)"></rect>
+        <rect x="22" y="13" width="6" height="27" rx="1.5" fill="var(--accent)" opacity="0.55"></rect>
+        <rect x="31" y="6" width="6" height="34" rx="1.5" fill="var(--accent)" opacity="0.25"></rect>
+        <path d="M3 43 L43 43" stroke="var(--ink)" stroke-width="2" stroke-linecap="round"></path>
+      </svg>
+      <div>
+        <h1>SANKET</h1>
+        <p class="sub">Warns a delivery app before the phone loses signal in a basement, so the order data is saved first. Problem PRAYAS-COMP-26-S-020.</p>
+      </div>
+    </div>
+    <div class="pick">
+      <label for="trace">Scenario</label>
+      <select id="trace"></select>
+    </div>
+  </header>
+
+  <section class="console" aria-label="Live view">
+    <div class="card readout">
+      <div>
+        <div class="eyebrow">Serving cell signal (RSRP)</div>
+        <div class="big"><span class="num" id="rsrp">-</span><span class="unit">dBm</span>
+          <span class="bars" id="bars" aria-label="Signal bars"><i></i><i></i><i></i><i></i></span></div>
+      </div>
+      <dl class="kv">
+        <dt>RSRQ</dt><dd class="data" id="rsrq">-</dd>
+        <dt>Trend (Kalman)</dt><dd class="data" id="trend">-</dd>
+        <dt id="riskLabel">Chance of no signal in 10 s</dt><dd class="data" id="risk">-</dd>
+      </dl>
+      <div class="meter" aria-hidden="true"><b id="riskBar"></b></div>
+      <div><span class="pill" id="status">Loading</span></div>
+      <div>
+        <div class="eyebrow" style="margin-bottom:6px">Delivery manifest on the phone</div>
+        <div class="tiers" id="tiers"></div>
+      </div>
+    </div>
+
+    <div class="card chartcard">
+      <div class="charthead">
+        <h3>Signal over time</h3>
+        <div class="legend">
+          <span><i class="key" style="background:var(--accent)"></i>Phone reading</span>
+          <span><i class="key" style="background:var(--muted)"></i>True signal</span>
+          <span><i class="dot" style="background:var(--accent)"></i>SANKET alarm</span>
+          <span><i class="sq" style="background:var(--base)"></i>Threshold alarm</span>
+          <span><i class="key" style="background:var(--accent-soft);height:9px"></i>SANKET forecast (90%)</span>
+        </div>
+      </div>
+      <svg id="chart" viewBox="0 0 760 300" role="img" aria-label="RSRP over time with alarms"></svg>
+      <div class="player">
+        <button class="primary" id="play" type="button">Play from start</button>
+        <div class="speed" role="group" aria-label="Playback speed">
+          <button type="button" data-speed="1" aria-pressed="false">1×</button>
+          <button type="button" data-speed="4" aria-pressed="true">4×</button>
+          <button type="button" data-speed="12" aria-pressed="false">12×</button>
+        </div>
+        <input type="range" id="scrub" min="0" max="1" value="1" aria-label="Time">
+        <span class="clock data" id="clock">0 s</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="card scene" aria-label="Where the rider is">
+    <h3 id="sceneTitle">Where the rider is</h3>
+    <svg id="scene" viewBox="0 0 760 170" role="img" aria-label="Cross-section of street, ramp and basement"></svg>
+    <p class="outcome" id="outcome"></p>
+  </section>
+
+  <section class="tune">
+    <div class="card settings">
+      <h3>Detector settings</h3>
+      <div class="field"><label for="h">Look-ahead horizon</label><output id="hOut" for="h"></output>
+        <input type="range" id="h" min="5" max="25" step="1">
+        <span class="hint">How far ahead the Kalman forecast looks for the no-service level.</span></div>
+      <div class="field"><label for="p">Required certainty</label><output id="pOut" for="p"></output>
+        <input type="range" id="p" min="0.5" max="0.9" step="0.05">
+        <span class="hint">Alarm when the chance of having no signal at the end of the horizon is at least this high.</span></div>
+      <div class="field"><label for="r">Minimum fall rate</label><output id="rOut" for="r"></output>
+        <input type="range" id="r" min="0" max="2" step="0.25">
+        <span class="hint">Ignore slow drifts; a basement ramp drops 1 to 4 dB every second.</span></div>
+      <div class="field"><label for="theta">No-service level</label>
+        <select id="theta"><option value="-118">-118 dBm</option><option value="-121">-121 dBm</option><option value="-124">-124 dBm</option></select></div>
+      <label class="check"><input type="checkbox" id="cm"> Common-mode test (ignore falls where a neighbour cell holds steady)</label>
+      <div class="player"><button type="button" id="reset">Back to tuned settings</button>
+        <span class="note">Tuned on calibration data, at most 2 false alarms per hour of real riding.</span></div>
+    </div>
+    <div class="card">
+      <h3>These settings on every demo scenario</h3>
+      <div class="scroll"><table id="tally"></table></div>
+      <p class="note" id="tallyNote" style="margin-top:8px"></p>
+    </div>
+  </section>
+
+  <section class="results">
+    <h2>What the full evaluation found</h2>
+    <div class="findings" id="findings"></div>
+    <div class="card scroll"><table id="results"></table></div>
+  </section>
+
+  <footer>
+    <p>Real signal: UCC 4G LTE drive-test dataset (Raca, Quinlan, Zahran and Sreenan, ACM MMSys 2018, CC BY 4.0). Basement entries and look-alikes: SANKET physics simulator calibrated on that dataset.</p>
+    <p>The detector here is the JavaScript port of the Python reference, checked tick by tick against it (0 mismatches over 1,737 test ticks).</p>
+  </footer>
+</div>
+
+<script src="sanket.js"></script>
+<script src="data.js"></script>
+<script src="metrics.js"></script>
+<script>
+(function () {
+  "use strict";
+  var D = window.SANKET_DATA, M = window.SANKET_METRICS, S = window.Sanket;
+  var $ = function (id) { return document.getElementById(id); };
+  var NS = "http://www.w3.org/2000/svg";
+  var TUNED = Object.assign({}, M.params.sanket);
+  var THR = M.params.threshold;
+  var REQ = M.prefetch.required_lead_99;
+  var TIERS = Object.keys(M.prefetch.tier_bytes).map(function (k) { return [k, M.prefetch.tier_bytes[k]]; });
+  var KIND = {
+    basement_ride: ["Scooter down a basement ramp", "entry"], basement_walk: ["Walk down to a basement", "entry"],
+    deep_indoor: ["Walk deep into a cloud-kitchen hub", "entry"], lobby_entry: ["Step into a ground-floor lobby", "look"],
+    underpass: ["Ride under a flyover", "look"], street_ride: ["Ordinary street riding", "look"],
+    cell_edge_handover: ["Ride through a handover zone", "look"],
+    inj_basement_ride: ["Real recording + scooter ramp", "real"], inj_basement_walk: ["Real recording + walk to basement", "real"],
+    inj_deep_indoor: ["Real recording + deep indoor walk", "real"]
+  };
+  var settings = Object.assign({}, TUNED), cur = 0, run = null, idx = 0, timer = null, speed = 4;
+
+  // ---------------------------------------------------------------- detection
+  function onset(tr) { return tr.episodes.length ? tr.episodes[0][0] : null; }
+  function firstLead(alarms, T) {
+    if (T === null) return null;
+    for (var i = 0; i < alarms.length; i++) if (alarms[i] >= T - 60 && alarms[i] < T) return T - alarms[i];
+    return null;
+  }
+  function compute(tr, st) {
+    var det = new S.SanketDetector(st);
+    var thr = new S.ThresholdDetector({ theta: THR.theta, persistence: THR.persistence });
+    var o = { sk: [], th: [], state: [], T: onset(tr) };
+    for (var i = 0; i < tr.t.length; i++) {
+      var t = tr.t[i];
+      if (det.step(t, tr.rsrp[i], tr.rsrq[i], tr.nbr[i])) o.sk.push(t);
+      if (thr.step(t, tr.rsrp[i], tr.rsrq[i], tr.nbr[i])) o.th.push(t);
+      var k = det.kf, ready = k.ready && det.nMeas > 0;
+      o.state.push(ready ? { level: k.level, rate: k.rate, p00: k.p00, p01: k.p01, p11: k.p11, q: k.q, risk: det.risk() } : null);
+    }
+    o.leadS = firstLead(o.sk, o.T);
+    o.leadT = firstLead(o.th, o.T);
+    return o;
+  }
+
+  // ---------------------------------------------------------------- scenario list
+  function buildPicker() {
+    var groups = [["featured", "Featured: the ride from Figure 1"], ["entry", "Entries that lose signal (simulated)"],
+                  ["look", "Look-alikes that should stay quiet (simulated)"], ["real", "Real recorded signal with a simulated entry"]];
+    var counts = {}, sel = $("trace");
+    groups.forEach(function (g) {
+      var og = document.createElement("optgroup"); og.label = g[1];
+      D.traces.forEach(function (tr, i) {
+        var info = KIND[tr.kind] || [tr.kind, "look"];
+        var grp = tr.featured ? "featured" : info[1];
+        if (grp !== g[0]) return;
+        counts[tr.kind] = (counts[tr.kind] || 0) + 1;
+        var opt = document.createElement("option"); opt.value = i;
+        opt.textContent = info[0] + (tr.featured ? "" : " · " + counts[tr.kind]);
+        og.appendChild(opt);
+      });
+      if (og.children.length) sel.appendChild(og);
+    });
+  }
+
+  // ---------------------------------------------------------------- chart
+  function el(name, attrs, text) {
+    var e = document.createElementNS(NS, name);
+    for (var k in attrs) e.setAttribute(k, attrs[k]);
+    if (text !== undefined) e.textContent = text;
+    return e;
+  }
+  function drawChart() {
+    var tr = D.traces[cur], svg = $("chart");
+    while (svg.firstChild) svg.removeChild(svg.firstChild);
+    var W = Math.max(360, Math.min(760, Math.round(svg.getBoundingClientRect().width) || 760)), H = 300, L = 48, R = 12, Tp = 12, B = 30;
+    svg.setAttribute("viewBox", "0 0 " + W + " " + H);
+    var t0 = tr.t[0], t1 = tr.t[tr.t.length - 1];
+    var X = function (t) { return L + (t - t0) / Math.max(1, t1 - t0) * (W - L - R); };
+    var Y = function (v) { var c = Math.max(-145, Math.min(-60, v)); return Tp + (-60 - c) / 85 * (H - Tp - B); };
+    var now = tr.t[idx];
+    [-140, -120, -100, -80, -60].forEach(function (v) {
+      svg.appendChild(el("line", { x1: L, x2: W - R, y1: Y(v), y2: Y(v), stroke: "var(--line)", "stroke-width": 1 }));
+      svg.appendChild(el("text", { x: L - 6, y: Y(v) + 4, "text-anchor": "end" }, v));
+    });
+    svg.appendChild(el("text", { x: 4, y: Tp + 26 }, "dBm"));
+    var stepT = W < 560 ? 40 : 20;
+    for (var s = 0; s <= t1; s += stepT) {
+      if (s < t0) continue;
+      svg.appendChild(el("text", { x: X(s), y: H - 10, "text-anchor": "middle" }, s + " s"));
+    }
+    if (run.T !== null) {
+      var end = tr.episodes[0][1] === null ? t1 : Math.min(t1, tr.episodes[0][1]);
+      svg.appendChild(el("rect", { x: X(run.T), y: Tp, width: Math.max(0, X(end) - X(run.T)), height: H - Tp - B, fill: "var(--loss-wash)" }));
+      svg.appendChild(el("text", { x: X(run.T) + 4, y: Tp + 12, fill: "var(--crit)", style: "fill:var(--crit)" }, "link lost"));
+    }
+    if (tr.t_entry !== null && tr.t_entry !== undefined) {
+      svg.appendChild(el("line", { x1: X(tr.t_entry), x2: X(tr.t_entry), y1: Tp, y2: H - B, stroke: "var(--line)", "stroke-width": 1.5 }));
+      svg.appendChild(el("text", { x: X(tr.t_entry) + 4, y: H - B - 6 }, "enters"));
+    }
+    svg.appendChild(el("line", { x1: L, x2: W - R, y1: Y(-124), y2: Y(-124), stroke: "var(--muted)", "stroke-width": 1, "stroke-dasharray": "2 3" }));
+    svg.appendChild(el("text", { x: W - R - 4, y: Y(-124) - 5, "text-anchor": "end" }, "no service, -124 dBm"));
+    // SANKET forecast cone from the current tick
+    var stt = run.state[idx];
+    if (stt && tr.rsrp[idx] !== null) {
+      var h = settings.horizon, up = [], dn = [];
+      for (var k = 0; k <= 20; k++) {
+        var hh = h * k / 20, m = stt.level + stt.rate * hh;
+        var v = stt.p00 + 2 * hh * stt.p01 + hh * hh * stt.p11 + stt.q * hh * hh * hh / 3;
+        var sd = Math.sqrt(Math.max(v, 0));
+        up.push(X(now + hh) + "," + Y(m + 1.645 * sd)); dn.unshift(X(now + hh) + "," + Y(m - 1.645 * sd));
+      }
+      svg.appendChild(el("polygon", { points: up.concat(dn).join(" "), fill: "var(--accent-soft)", stroke: "none" }));
+    }
+    // true signal (simulated profiles) and phone readings, up to now
+    if (tr.true_rsrp) svg.appendChild(el("path", { d: pathOf(tr.t, tr.true_rsrp, idx, X, Y, false), fill: "none", stroke: "var(--muted)", "stroke-width": 1.2 }));
+    svg.appendChild(el("path", { d: pathOf(tr.t, tr.rsrp, idx, X, Y, true), fill: "none", stroke: "var(--accent)", "stroke-width": 2.2, "stroke-linejoin": "round" }));
+    run.th.forEach(function (a) {
+      if (a <= now) svg.appendChild(el("rect", { x: X(a) - 5, y: Tp + 22 - 5, width: 10, height: 10, rx: 2, fill: "var(--base)", stroke: "var(--surface)", "stroke-width": 2 }));
+    });
+    run.sk.forEach(function (a) {
+      if (a <= now) svg.appendChild(el("circle", { cx: X(a), cy: Tp + 40, r: 6, fill: "var(--accent)", stroke: "var(--surface)", "stroke-width": 2 }));
+    });
+    svg.appendChild(el("line", { x1: X(now), x2: X(now), y1: Tp, y2: H - B, stroke: "var(--ink)", "stroke-width": 1, opacity: 0.35 }));
+  }
+  function pathOf(t, v, upto, X, Y, step) {
+    var d = "", pen = false, prev = null;
+    for (var i = 0; i <= upto && i < t.length; i++) {
+      if (v[i] === null || v[i] === undefined) { pen = false; prev = null; continue; }
+      if (!pen) { d += "M" + X(t[i]).toFixed(1) + "," + Y(v[i]).toFixed(1); pen = true; }
+      else if (step) d += "H" + X(t[i]).toFixed(1) + "V" + Y(v[i]).toFixed(1);
+      else d += "L" + X(t[i]).toFixed(1) + "," + Y(v[i]).toFixed(1);
+      prev = v[i];
+    }
+    return d || "M0,0";
+  }
+
+  // ---------------------------------------------------------------- scene
+  function drawScene() {
+    var tr = D.traces[cur], svg = $("scene"), kind = tr.kind.replace("inj_", "");
+    while (svg.firstChild) svg.removeChild(svg.firstChild);
+    var W = 760, G = 70, F = 140;
+    svg.appendChild(el("rect", { x: 0, y: 0, width: W, height: G, fill: "var(--sky)" }));
+    svg.appendChild(el("rect", { x: 0, y: G, width: W, height: 170 - G, fill: "var(--earth)" }));
+    var tower = function (x) {
+      svg.appendChild(el("path", { d: "M" + (x - 9) + "," + G + " L" + x + "," + (G - 46) + " L" + (x + 9) + "," + G + " Z", fill: "none", stroke: "var(--ink-2)", "stroke-width": 1.5 }));
+      for (var r = 1; r <= 3; r++) svg.appendChild(el("path", { d: "M" + (x + 6 * r) + "," + (G - 46 - 6 * r) + " a" + 8 * r + "," + 8 * r + " 0 0 1 0," + 12 * r, fill: "none", stroke: "var(--accent)", "stroke-width": 1.5, opacity: 0.25 + 0.2 * r, class: "wave" }));
+    };
+    tower(40);
+    var path;
+    if (kind === "basement_ride" || kind === "basement_walk" || kind === "deep_indoor") {
+      var deep = kind === "deep_indoor";
+      svg.appendChild(el("rect", { x: 300, y: deep ? G - 52 : G - 40, width: 440, height: deep ? 52 : 40, fill: "var(--concrete)" }));
+      if (deep) {
+        path = [[60, G - 2], [300, G - 2], [740, G - 2]];
+        svg.appendChild(el("text", { x: 520, y: G - 22, "text-anchor": "middle" }, "concrete hub, ground floor"));
+      } else {
+        svg.appendChild(el("rect", { x: 300, y: G, width: 440, height: F - G + 14, fill: "var(--concrete)", opacity: 0.55 }));
+        svg.appendChild(el("path", { d: "M300," + G + " L410," + F + " L740," + F, fill: "none", stroke: "var(--ink-2)", "stroke-width": 2 }));
+        svg.appendChild(el("text", { x: 360, y: G + 30, "text-anchor": "middle", transform: "rotate(42 360 " + (G + 30) + ")" }, "ramp"));
+        svg.appendChild(el("text", { x: 600, y: F - 8, "text-anchor": "middle" }, "basement parking"));
+        path = [[60, G - 2], [300, G - 2], [410, F - 2], [740, F - 2]];
+      }
+    } else if (kind === "lobby_entry") {
+      svg.appendChild(el("rect", { x: 380, y: G - 56, width: 300, height: 56, fill: "var(--concrete)" }));
+      svg.appendChild(el("text", { x: 530, y: G - 34, "text-anchor": "middle" }, "lobby"));
+      path = [[60, G - 2], [380, G - 2], [600, G - 2]];
+    } else if (kind === "underpass") {
+      svg.appendChild(el("rect", { x: 330, y: G - 34, width: 140, height: 10, fill: "var(--concrete)" }));
+      svg.appendChild(el("rect", { x: 330, y: G - 24, width: 12, height: 24, fill: "var(--concrete)" }));
+      svg.appendChild(el("rect", { x: 458, y: G - 24, width: 12, height: 24, fill: "var(--concrete)" }));
+      svg.appendChild(el("text", { x: 400, y: G - 40, "text-anchor": "middle" }, "flyover"));
+      path = [[60, G - 2], [720, G - 2]];
+    } else {
+      tower(720);
+      path = [[60, G - 2], [700, G - 2]];
+    }
+    svg.appendChild(el("line", { x1: 0, x2: W, y1: G, y2: G, stroke: "var(--ink-2)", "stroke-width": 1 }));
+    var pr = progress(tr, entranceFraction(path)), pt = along(path, pr);
+    svg.appendChild(el("circle", { cx: pt[0], cy: pt[1] - 7, r: 7, fill: "var(--accent)", stroke: "var(--surface)", "stroke-width": 2 }));
+    var r = tr.rsrp[idx], bars = r === null ? 0 : (r >= -85 ? 4 : r >= -95 ? 3 : r >= -105 ? 2 : r >= -115 ? 1 : 0);
+    Array.prototype.forEach.call(svg.querySelectorAll(".wave"), function (w, i) { w.setAttribute("opacity", i < bars ? 0.85 : 0.12); });
+  }
+  function entranceFraction(path) {      // vertex 1 of every path is the door or the top of the ramp
+    var total = 0, upto = 0;
+    for (var i = 1; i < path.length; i++) {
+      var len = Math.hypot(path[i][0] - path[i - 1][0], path[i][1] - path[i - 1][1]);
+      total += len; if (i === 1) upto = len;
+    }
+    return path.length > 2 ? upto / total : 1;
+  }
+  function progress(tr, fe) {
+    var t = tr.t[idx], t0 = tr.t[0], t1 = tr.t[tr.t.length - 1], te = tr.t_entry;
+    var kind = tr.kind.replace("inj_", "");
+    if (te === null || te === undefined || kind === "underpass" || fe >= 1) return (t - t0) / Math.max(1, t1 - t0);
+    if (t < te) return fe * (t - t0) / Math.max(1, te - t0);
+    var Ls = tr.loss_db || [], maxL = 0;
+    for (var i = 0; i < Ls.length; i++) maxL = Math.max(maxL, Ls[i] || 0);
+    var f = maxL > 0 && Ls[idx] !== null && Ls[idx] !== undefined ? Ls[idx] / maxL : (t - te) / Math.max(1, t1 - te);
+    return fe + (1 - fe) * Math.min(1, Math.max(0, f));
+  }
+  function along(path, f) {
+    var segs = [], total = 0;
+    for (var i = 1; i < path.length; i++) {
+      var dx = path[i][0] - path[i - 1][0], dy = path[i][1] - path[i - 1][1], len = Math.hypot(dx, dy);
+      segs.push([path[i - 1], path[i], len]); total += len;
+    }
+    var want = f * total;
+    for (var j = 0; j < segs.length; j++) {
+      if (want <= segs[j][2] || j === segs.length - 1) {
+        var u = segs[j][2] ? Math.min(1, want / segs[j][2]) : 0;
+        return [segs[j][0][0] + u * (segs[j][1][0] - segs[j][0][0]), segs[j][0][1] + u * (segs[j][1][1] - segs[j][0][1])];
+      }
+      want -= segs[j][2];
+    }
+    return path[0];
+  }
+
+  // ---------------------------------------------------------------- readout + outcome
+  function fmt(v, d, unit) { return v === null || v === undefined || !isFinite(v) ? "-" : v.toFixed(d) + (unit || ""); }
+  function render() {
+    var tr = D.traces[cur], t = tr.t[idx], r = tr.rsrp[idx], stt = run.state[idx];
+    $("rsrp").textContent = r === null ? "no signal" : String(r);
+    $("rsrp").classList.toggle("none", r === null);
+    var bars = r === null ? 0 : (r >= -85 ? 4 : r >= -95 ? 3 : r >= -105 ? 2 : r >= -115 ? 1 : 0);
+    var b = $("bars"); b.classList.toggle("zero", bars === 0);
+    Array.prototype.forEach.call(b.children, function (c, i) { c.classList.toggle("on", i < bars); });
+    $("rsrq").textContent = tr.rsrq[idx] === null ? "-" : tr.rsrq[idx] + " dB";
+    $("trend").textContent = stt && r !== null ? (stt.rate >= 0 ? "+" : "") + stt.rate.toFixed(2) + " dB/s" : "-";
+    $("riskLabel").textContent = "Chance of no signal in " + settings.horizon + " s";
+    var risk = stt && r !== null ? stt.risk : 0;
+    $("risk").textContent = stt && r !== null ? Math.round(risk * 100) + "%" : "-";
+    $("riskBar").style.width = Math.round(risk * 100) + "%";
+    $("clock").textContent = Math.round(t) + " s";
+    $("scrub").max = tr.t.length - 1; $("scrub").value = idx;
+
+    var firedBefore = run.sk.filter(function (a) { return a <= t; });
+    var lastAlarm = firedBefore.length ? firedBefore[firedBefore.length - 1] : null;
+    var lost = run.T !== null && t >= run.T;
+    var status = $("status"), cls = "ok", text = "Signal steady";
+    if (lastAlarm !== null && t - lastAlarm < 3 && !lost) { cls = "fire"; text = "Prefetch now: link could drop within " + settings.horizon + " s"; }
+    else if (lost) {
+      var saved = tierState(TIERS[2][0], lastAlarm, t) === "saved";
+      cls = saved ? "saved" : "lost";
+      text = saved ? "Link lost. The order is already on the phone" : "Link lost. Order data was not saved in time";
+    } else if (lastAlarm !== null) { cls = "cached"; text = "Order data saved for offline use"; }
+    else if (risk >= 0.3) { cls = "watch"; text = "Signal falling, watching"; }
+    status.className = "pill " + cls; status.textContent = text;
+
+    var box = $("tiers"); box.textContent = "";
+    TIERS.forEach(function (tier) {
+      var st = tierState(tier[0], lastAlarm, t);
+      var row = document.createElement("div"); row.className = "tier";
+      var name = document.createElement("span");
+      name.innerHTML = "";
+      name.appendChild(document.createTextNode(tier[0].replace(/^T\d /, "") + " "));
+      var sm = document.createElement("small"); sm.textContent = (tier[1] >= 1000 ? Math.round(tier[1] / 1000) + " KB" : tier[1] + " B");
+      name.appendChild(sm);
+      var chip = document.createElement("span"); chip.className = "chip " + (st === "saved" ? "saved" : st === "loading" ? "loading" : st === "failed" ? "failed" : "");
+      chip.textContent = { saved: "saved", loading: "downloading", failed: "too late", idle: "not needed yet" }[st];
+      row.appendChild(name); row.appendChild(chip); box.appendChild(row);
+    });
+    drawChart(); drawScene(); outcomeText();
+  }
+  function tierState(name, alarm, t) {
+    if (alarm === null) return run.T !== null && t >= run.T ? "failed" : "idle";
+    var done = alarm + REQ[name];
+    if (run.T !== null && done > run.T) return t >= run.T ? "failed" : "loading";
+    return t >= done ? "saved" : "loading";
+  }
+  function outcomeText() {
+    var tr = D.traces[cur], info = KIND[tr.kind] || [tr.kind], out = $("outcome");
+    $("sceneTitle").textContent = info[0];
+    var parts = [];
+    if (run.T !== null) {
+      parts.push("Link lost at " + Math.round(run.T) + " s.");
+      parts.push(run.leadS !== null ? "SANKET warned " + Math.round(run.leadS) + " s before." : "SANKET did not warn in time.");
+      parts.push(run.leadT !== null ? "The static threshold warned " + Math.round(run.leadT) + " s before." : "The static threshold did not warn in time.");
+      parts.push("Order token, customer card and route need about " + REQ[TIERS[2][0]] + " s; offline map tiles need about " + REQ[TIERS[3][0]] + " s.");
+    } else {
+      parts.push("No loss in this scenario.");
+      parts.push(run.sk.length ? "SANKET raised " + run.sk.length + " alarm(s): a wasted prefetch, about 1.6 KB with ETag revalidation." : "SANKET stayed quiet, as it should.");
+      parts.push(run.th.length ? "The static threshold raised " + run.th.length + "." : "The static threshold stayed quiet.");
+    }
+    out.textContent = parts.join(" ");
+  }
+
+  // ---------------------------------------------------------------- tally over all demo scenarios
+  function tally() {
+    var rows = { entries: [0, 0, 0], real: [0, 0, 0], look: [0, 0, 0] };
+    D.traces.forEach(function (tr) {
+      var info = KIND[tr.kind] || [tr.kind, "look"], o = compute(tr, settings);
+      var g = info[1] === "real" ? "real" : (o.T === null ? "look" : "entries");
+      rows[g][0] += 1;
+      if (o.T === null) { rows[g][1] += o.sk.length ? 1 : 0; rows[g][2] += o.th.length ? 1 : 0; }
+      else { rows[g][1] += o.leadS !== null && o.leadS >= 10 ? 1 : 0; rows[g][2] += o.leadT !== null && o.leadT >= 10 ? 1 : 0; }
+    });
+    var t = $("tally");
+    t.innerHTML = "<thead><tr><th>Scenarios</th><th>Count</th><th>SANKET</th><th>Threshold</th></tr></thead>";
+    var body = document.createElement("tbody");
+    [["Simulated entries warned ≥ 10 s ahead", rows.entries], ["Real-signal entries warned ≥ 10 s ahead", rows.real],
+     ["Look-alikes with a false alarm (lower is better)", rows.look]].forEach(function (r) {
+      var tr = document.createElement("tr");
+      [r[0], r[1][0], r[1][1], r[1][2]].forEach(function (v, i) { var td = document.createElement("td"); td.textContent = v; if (i) td.className = "data"; tr.appendChild(td); });
+      body.appendChild(tr);
+    });
+    t.appendChild(body);
+    $("tallyNote").textContent = "A small demo set (" + D.traces.length + " scenarios). The full test used " + M.data.sim_test.profiles + " unseen simulated profiles, " +
+      M.data.real_test.hours.toFixed(1) + " h of real rides and " + M.data.inj_test.profiles + " real-signal entries (table below).";
+  }
+
+  // ---------------------------------------------------------------- results (from metrics.js)
+  function results() {
+    var h = M.headline, d = M.fleet_daily;
+    var f = [
+      [Math.round(h.sanket_sim_recall10 * 100) + "% vs " + Math.round(h.threshold_sim_recall10 * 100) + "%",
+       "Unseen basement entries warned at least 10 s ahead by SANKET vs a static threshold, at under 2 false alarms per hour on real rides."],
+      [h.critical_required_lead_s + " s and " + h.full_required_lead_s + " s",
+       "Warning needed for the critical order data and for the full bundle with map tiles. SANKET saved the critical data in " + Math.round(h.sanket_critical_data_saved * 100) + "% of entries (threshold " + Math.round(h.threshold_critical_data_saved * 100) + "%)."],
+      [Math.round(d[0].hybrid * 100) + "% → " + Math.round(d[d.length - 1].hybrid * 100) + "%",
+       "Day 1 to day " + d.length + " when phones also remember known dead zones. Only " + Math.round(h.physical_ceiling_10s * 100) + "% of entries leave 10 s between the entrance and the loss, so signal alone cannot reach 85%."]
+    ];
+    var box = $("findings");
+    f.forEach(function (x) {
+      var c = document.createElement("div"); c.className = "card finding";
+      var a = document.createElement("div"); a.className = "fig"; a.textContent = x[0];
+      var p = document.createElement("p"); p.textContent = x[1];
+      c.appendChild(a); c.appendChild(p); box.appendChild(c);
+    });
+    var names = { sanket: "SANKET (Kalman + common-mode)", logistic: "Logistic regression (ML)", slope_ttl: "Regression slope", naive_gradient: "Naive gradient", threshold: "Static threshold" };
+    var t = $("results");
+    t.innerHTML = "<thead><tr><th>Detector (tuned on calibration data)</th><th>Entries warned ≥ 10 s</th><th>≥ 15 s</th><th>Silent when no loss followed</th><th>False alarms per hour, real rides</th><th>Real-signal entries ≥ 10 s</th><th>Critical data saved</th></tr></thead>";
+    var body = document.createElement("tbody");
+    ["sanket", "logistic", "slope_ttl", "naive_gradient", "threshold"].forEach(function (n) {
+      var s = M.test[n], tr = document.createElement("tr"); if (n === "sanket") tr.className = "mine";
+      [names[n], pct(s.sim.recall10), pct(s.sim.recall15), pct(s.sim.specificity), s.real.fa_per_h.toFixed(2), pct(s.inj.recall10), pct(M.end_to_end[n].critical_data_saved)]
+        .forEach(function (v, i) { var td = document.createElement("td"); td.textContent = v; if (i) td.className = "data"; tr.appendChild(td); });
+      body.appendChild(tr);
+    });
+    t.appendChild(body);
+  }
+  function pct(x) { return (x * 100).toFixed(1) + "%"; }
+
+  // ---------------------------------------------------------------- controls
+  function syncControls() {
+    $("h").value = settings.horizon; $("hOut").textContent = settings.horizon + " s";
+    $("p").value = settings.p_thr; $("pOut").textContent = Math.round(settings.p_thr * 100) + "%";
+    $("r").value = settings.min_rate; $("rOut").textContent = settings.min_rate.toFixed(2) + " dB/s";
+    $("theta").value = String(settings.theta); $("cm").checked = !!settings.nbr_veto;
+  }
+  function recompute(keepIdx) {
+    run = compute(D.traces[cur], settings);
+    if (!keepIdx) idx = D.traces[cur].t.length - 1;
+    idx = Math.min(idx, D.traces[cur].t.length - 1);
+    render();
+  }
+  function stop() { if (timer) { clearInterval(timer); timer = null; } $("play").textContent = "Play from start"; }
+  function play() {
+    stop(); idx = 0; render();
+    $("play").textContent = "Pause";
+    timer = setInterval(function () {
+      if (idx >= D.traces[cur].t.length - 1) { stop(); return; }
+      idx += 1; render();
+    }, 1000 / speed);
+  }
+  function onSettings() {
+    settings.horizon = Number($("h").value); settings.p_thr = Number($("p").value); settings.min_rate = Number($("r").value);
+    settings.theta = Number($("theta").value); settings.nbr_veto = $("cm").checked;
+    syncControls(); recompute(true); tally();
+  }
+
+  var resizeTimer = null;
+  window.addEventListener("resize", function () {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(function () { if (run) drawChart(); }, 150);
+  });
+
+  buildPicker();
+  var featured = D.traces.findIndex(function (t) { return t.featured; });
+  cur = featured >= 0 ? featured : 0;
+  $("trace").value = String(cur);
+  syncControls(); recompute(false); tally(); results();
+  $("trace").addEventListener("change", function (e) { stop(); cur = Number(e.target.value); recompute(false); });
+  $("play").addEventListener("click", function () { if (timer) stop(); else play(); });
+  $("scrub").addEventListener("input", function (e) { stop(); idx = Number(e.target.value); render(); });
+  ["h", "p", "r", "theta", "cm"].forEach(function (id) { $(id).addEventListener("input", onSettings); $(id).addEventListener("change", onSettings); });
+  $("reset").addEventListener("click", function () { settings = Object.assign({}, TUNED); syncControls(); recompute(true); tally(); });
+  Array.prototype.forEach.call(document.querySelectorAll(".speed button"), function (btn) {
+    btn.addEventListener("click", function () {
+      speed = Number(btn.getAttribute("data-speed"));
+      Array.prototype.forEach.call(document.querySelectorAll(".speed button"), function (x) { x.setAttribute("aria-pressed", x === btn ? "true" : "false"); });
+      if (timer) { var keep = idx; stop(); $("play").textContent = "Pause"; timer = setInterval(function () { if (idx >= D.traces[cur].t.length - 1) { stop(); return; } idx += 1; render(); }, 1000 / speed); idx = keep; }
+    });
+  });
+})();
+</script>

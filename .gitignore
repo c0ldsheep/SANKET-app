@@ -1,0 +1,21 @@
+.venv/
+__pycache__/
+.pytest_cache/
+.DS_Store
+submission/build/
+*.pyc
+*.class
+android/build/
+
+# Kept on this computer only: personal notes, presentation coaching, the problem PDF
+HANDOFF.md
+HANDOFF-log.md
+START_HERE.md
+presentation/
+docs/
+
+# Personal details (names, admission numbers) and the files built from them
+submission/team.json
+submission/PRAYAS-COMP-26-S-020_SANKET.pdf
+submission/PRAYAS-COMP-26-S-020_SANKET.docx
+submission/copy_paste_text.txt

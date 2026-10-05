@@ -1,0 +1,11 @@
+{
+  "_help": "Copy this file to team.json, fill in your details, then run: ./.venv/bin/python submission/build_submission.py",
+  "team_name_id": "[Team name / ID]",
+  "member_1": "[Name], [Terna ID], [Class], [Division], [Branch]",
+  "member_2": "[Name], [Terna ID], [Class], [Division], [Branch]",
+  "mentor": "Dr. Rohini Palve",
+  "date": "",
+  "youtube_link": "",
+  "code_link": "",
+  "dashboard_link": ""
+}

@@ -1,0 +1,117 @@
+{
+  "params": {
+    "threshold": {
+      "persistence": 1,
+      "theta": -122.0
+    },
+    "naive_gradient": {
+      "delta_s": 8.0,
+      "persistence": 1,
+      "g": 2.5
+    },
+    "slope_ttl": {
+      "window_s": 14.0,
+      "method": "ols",
+      "min_rate": 1.5,
+      "horizon": 10.0,
+      "persistence": 3,
+      "theta": -124.0
+    },
+    "sanket": {
+      "meas_sd": 3.0,
+      "q": 0.1,
+      "p_thr": 0.7,
+      "rsrq_mode": "off",
+      "persistence": 1,
+      "horizon": 10.0,
+      "min_rate": 1.0,
+      "theta": -124.0,
+      "nbr_veto": true,
+      "nbr_delta": 3.0,
+      "nbr_diff": 1.5
+    },
+    "logistic": {
+      "meas_sd": 3.0,
+      "q": 0.1,
+      "theta": -124.0,
+      "horizon": 10.0,
+      "weights": [
+        -0.016428,
+        -0.426016,
+        -2.159127,
+        0.055633,
+        0.085348,
+        -0.071341,
+        0.015299
+      ],
+      "bias": 1.20168,
+      "tau": 0.8,
+      "persistence": 1
+    }
+  },
+  "calibration_scores": {
+    "threshold": {
+      "sim_recall10": 0.101719,
+      "sim_recall15": 0.032951,
+      "sim_specificity": 0.907731,
+      "sim_accuracy": 0.532667,
+      "sim_median_lead": 3.3,
+      "sim_fa_per_h": 2.48892,
+      "real_fa_per_h": 1.975062,
+      "real_recall10": 0.083333
+    },
+    "naive_gradient": {
+      "sim_recall10": 0.290831,
+      "sim_recall15": 0.186246,
+      "sim_specificity": 0.839152,
+      "sim_accuracy": 0.584,
+      "sim_median_lead": 9.6,
+      "sim_fa_per_h": 4.212019,
+      "real_fa_per_h": 1.795511,
+      "real_recall10": 0.041667
+    },
+    "slope_ttl": {
+      "sim_recall10": 0.302292,
+      "sim_recall15": 0.189112,
+      "sim_specificity": 0.84414,
+      "sim_accuracy": 0.592,
+      "sim_median_lead": 9.3,
+      "sim_fa_per_h": 4.116291,
+      "real_fa_per_h": 1.795511,
+      "real_recall10": 0.083333
+    },
+    "sanket": {
+      "sim_recall10": 0.422636,
+      "sim_recall15": 0.260745,
+      "sim_specificity": 0.812968,
+      "sim_accuracy": 0.631333,
+      "sim_median_lead": 9.3,
+      "sim_fa_per_h": 4.850204,
+      "real_fa_per_h": 1.735661,
+      "real_recall10": 0.291667
+    },
+    "logistic": {
+      "sim_recall10": 0.323782,
+      "sim_recall15": 0.204871,
+      "sim_specificity": 0.849127,
+      "sim_accuracy": 0.604667,
+      "sim_median_lead": 8.95,
+      "real_fa_per_h": 1.436409,
+      "real_recall10": 0.0
+    }
+  },
+  "logistic_fit": {
+    "converged": true,
+    "n": 201530,
+    "pos_frac": 0.126735,
+    "features": [
+      "level",
+      "rate",
+      "rate_sd",
+      "margin_z",
+      "q_level",
+      "q_rate",
+      "nbr_gap"
+    ]
+  }
+}

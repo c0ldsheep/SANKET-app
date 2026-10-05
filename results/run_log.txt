@@ -1,0 +1,30 @@
+[    0.0s] simulating calibration and test sets
+[    5.2s] real traces: 115 rider-like (41.1 h); cal 58, test 57
+[    5.5s] data: {"sim_cal": {"profiles": 1500, "loss_events": 698, "negatives": 802, "hours": 53.1225}, "sim_test": {"profiles": 1500, "loss_events": 683, "negatives": 817, "hours": 52.773333}, "real_cal": {"profiles": 58, "loss_events": 24, "negatives": 38, "hours": 21.951944}, "real_test": {"profiles": 57, "loss_events": 23, "negatives": 40, "hours": 19.1}, "inj_test": {"profiles": 600, "loss_events": 589, "negatives": 30, "hours": 34.833333}, "ucc_total_traces": 135, "ucc_total_hours": 52.428333, "ucc_hours_by_mobility": {"bus": 3.281667, "car": 23.1925, "pedestrian": 9.882778, "static": 4.695, "train": 11.376389}}
+[    5.5s] calibrating simulator noise against real traces
+[   27.1s] characterising decay at entrances
+[   28.3s] tuned threshold: 42 settings in 1s -> {'persistence': 1, 'theta': -122.0}
+[   30.5s] tuned naive_gradient: 96 settings in 2s -> {'delta_s': 8.0, 'persistence': 1, 'g': 2.5}
+[   39.2s] tuned slope_ttl: 864 settings in 9s -> {'window_s': 14.0, 'method': 'ols', 'min_rate': 1.5, 'horizon': 10.0, 'persistence': 3, 'theta': -124.0}
+[  854.5s] tuned sanket: 51840 settings in 815s -> {'meas_sd': 3.0, 'q': 0.1, 'p_thr': 0.7, 'rsrq_mode': 'off', 'persistence': 1, 'horizon': 10.0, 'min_rate': 1.0, 'theta': -124.0, 'nbr_veto': True, 'nbr_delta': 3.0, 'nbr_diff': 1.5}
+[  855.7s] tuned logistic: tau=0.8 persistence=1 ({'converged': True, 'n': 201530, 'pos_frac': 0.12673547362675533, 'features': ['level', 'rate', 'rate_sd', 'margin_z', 'q_level', 'q_rate', 'nbr_gap']})
+[  855.9s] evaluating every detector on unseen test data (streaming implementation)
+[  856.5s]   threshold       sim recall10=0.102 spec=0.907 acc=0.541 | real FA/h=0.98 | inj recall10=0.093
+[  857.3s]   naive_gradient  sim recall10=0.313 spec=0.853 acc=0.607 | real FA/h=1.37 | inj recall10=0.146
+[  859.0s]   slope_ttl       sim recall10=0.335 spec=0.824 acc=0.601 | real FA/h=1.76 | inj recall10=0.216
+[  862.3s]   logistic        sim recall10=0.319 spec=0.838 acc=0.602 | real FA/h=0.98 | inj recall10=0.180
+[  865.2s]   sanket          sim recall10=0.438 spec=0.785 acc=0.627 | real FA/h=1.76 | inj recall10=0.290
+[  868.1s] bulk == streaming on test set: True (794 alarms)
+[  868.1s] tracing detection vs false-alarm curves
+[  934.8s] ablations
+[  941.8s] sensitivity analysis
+[  960.2s] prefetch latency model
+[  961.1s] critical tiers need 3 s, full bundle 10 s; end-to-end: threshold=0.46/0.31, naive_gradient=0.54/0.47, slope_ttl=0.61/0.51, logistic=0.63/0.54, sanket=0.80/0.68
+[  961.1s] fleet dead-zone memory simulation
+[ 1864.6s]   fleet[main]: day1 hybrid=0.76 day7 hybrid=0.95 signal=0.37
+[ 1870.1s]   fleet[flatter_popularity]: day1 hybrid=0.62 day7 hybrid=0.95 signal=0.38
+[ 1874.8s]   fleet[bigger_city]: day1 hybrid=0.55 day7 hybrid=0.86 signal=0.43
+[ 1874.8s] runtime: 1.4 us per reading in pure Python
+[ 1874.8s] figures
+[ 2775.0s] golden vectors and dashboard data
+[ 2775.0s] done -> results/metrics.json, results/RESULTS.md, results/figures/

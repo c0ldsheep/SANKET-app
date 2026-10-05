@@ -1,0 +1,30 @@
+[    0.0s] simulating calibration and test sets
+[    5.0s] real traces: 115 rider-like (41.1 h); cal 58, test 57
+[    5.3s] data: {"sim_cal": {"profiles": 1500, "loss_events": 698, "negatives": 802, "hours": 53.1225}, "sim_test": {"profiles": 1500, "loss_events": 683, "negatives": 817, "hours": 52.773333}, "real_cal": {"profiles": 58, "loss_events": 24, "negatives": 38, "hours": 21.951944}, "real_test": {"profiles": 57, "loss_events": 23, "negatives": 40, "hours": 19.1}, "inj_test": {"profiles": 600, "loss_events": 589, "negatives": 30, "hours": 34.833333}, "ucc_total_traces": 135, "ucc_total_hours": 52.428333, "ucc_hours_by_mobility": {"bus": 3.281667, "car": 23.1925, "pedestrian": 9.882778, "static": 4.695, "train": 11.376389}}
+[    5.3s] calibrating simulator noise against real traces
+[   26.8s] characterising decay at entrances
+[   27.3s] reusing tuned parameters
+[   27.4s] evaluating every detector on unseen test data (streaming implementation)
+[   27.9s]   threshold       sim recall10=0.102 spec=0.907 acc=0.541 | real FA/h=0.98 | inj recall10=0.093
+[   28.4s]   naive_gradient  sim recall10=0.313 spec=0.853 acc=0.607 | real FA/h=1.37 | inj recall10=0.146
+[   29.6s]   slope_ttl       sim recall10=0.335 spec=0.824 acc=0.601 | real FA/h=1.76 | inj recall10=0.216
+[   30.6s]   logistic        sim recall10=0.319 spec=0.838 acc=0.602 | real FA/h=0.98 | inj recall10=0.180
+[   31.6s]   sanket          sim recall10=0.438 spec=0.785 acc=0.627 | real FA/h=1.76 | inj recall10=0.290
+[   32.6s] bulk == streaming on test set: True (794 alarms)
+[   32.6s] tracing detection vs false-alarm curves (every grid setting, bulk path, test data)
+[   33.1s]   threshold: 42 settings
+[   35.1s]   naive_gradient: 96 settings
+[   43.3s]   slope_ttl: 864 settings
+[   81.3s]   sanket: 8640 settings
+[   81.6s] ablations
+[   88.6s] sensitivity analysis
+[  107.9s] prefetch latency model
+[  108.6s] critical tiers need 3 s, full bundle 10 s; end-to-end: threshold=0.46/0.31, naive_gradient=0.54/0.47, slope_ttl=0.61/0.51, logistic=0.63/0.54, sanket=0.80/0.68
+[  108.6s] fleet dead-zone memory simulation
+[  113.6s]   fleet[main]: day1 hybrid=0.76 day7 hybrid=0.95 signal=0.37
+[  118.5s]   fleet[flatter_popularity]: day1 hybrid=0.62 day7 hybrid=0.95 signal=0.38
+[  123.2s]   fleet[bigger_city]: day1 hybrid=0.55 day7 hybrid=0.86 signal=0.43
+[  123.2s] runtime: 1.4 us per reading in pure Python
+[  123.2s] figures
+[  125.2s] golden vectors and dashboard data
+[  125.2s] done -> results/metrics.json, results/RESULTS.md, results/figures/
