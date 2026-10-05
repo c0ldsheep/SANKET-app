@@ -32,7 +32,7 @@
     <string name="start_protection">Start protection</string>
     <string name="stop_protection">Stop protection</string>
     <string name="stop_demo">Stop the demo</string>
-    <string name="protect_hint_off">Uses location and the barometer only while it runs.</string>
+    <string name="protect_hint_off">Uses location and motion sensors only while it runs.</string>
     <string name="protect_hint_on">Runs in the background, so you can close the app.</string>
     <string name="protect_hint_demo">A recorded ride is playing, with a sample map download. Protection carries on after it.</string>
     <string name="protect_hint_downloads">Watching the signal while your downloads run. Turn on protection to keep watching after they finish.</string>
@@ -68,6 +68,7 @@
     <string name="dl_retrying">Connection dropped. Trying again in a moment.</string>
     <string name="dl_waiting_signal">Waiting for signal. It continues by itself.</string>
     <string name="dl_waiting_wifi">Waiting for Wi-Fi. It continues by itself.</string>
+    <string name="dl_ask_mobile">Needs %s. That\'s a lot of mobile data, so it waits for Wi-Fi.</string>
     <string name="dl_waiting_data_off">Mobile data is off. Turn it on, or connect to Wi-Fi.</string>
     <string name="dl_waiting_airplane">Airplane mode is on. It continues when you\'re back online.</string>
     <string name="dl_server_unreachable">Can\'t reach the server. Trying again in %s.</string>
@@ -85,6 +86,7 @@
     </plurals>
     <string name="dl_open">Open</string>
     <string name="dl_try_now">Try now</string>
+    <string name="dl_use_mobile">Use mobile data</string>
     <string name="dl_try_again">Try again</string>
     <string name="dl_new_link">Use new link</string>
     <string name="dl_cancel">Cancel</string>
@@ -131,6 +133,9 @@
     <string name="move_up">Going up, %.1f m/s</string>
     <string name="move_down">Going down, %.1f m/s</string>
     <string name="move_sub">Fast up or down usually means a lift or a ramp, so SANKET saves progress.</string>
+    <string name="move_lift_up">Lift going up</string>
+    <string name="move_lift_down">Lift going down</string>
+    <string name="move_sub_accel">This phone has no barometer, so SANKET feels lifts with the motion sensor.</string>
     <string name="phone">Your phone</string>
     <string name="phone_learning">Learning</string>
     <string name="phone_learning_sub">SANKET is measuring how often this phone updates its signal.</string>
@@ -171,9 +176,9 @@
 
     <!-- Dialogs -->
     <string name="got_it">Got it</string>
-    <string name="how_text" formatted="false">1. SANKET reads your signal every second and works out how fast it is falling.\n\n2. When the chance of losing signal in the next 10 seconds passes 70%, it saves your downloads at once.\n\n3. If a nearby tower stays strong, it\'s only a handover, so SANKET stays quiet.\n\n4. It remembers places where you lost signal before, and notices lifts with the barometer, so it can act even earlier.\n\nWhen the signal comes back, downloads continue from where they stopped.</string>
+    <string name="how_text" formatted="false">1. SANKET reads your signal every second and works out how fast it is falling.\n\n2. When the chance of losing signal in the next 10 seconds passes 70%, it saves your downloads at once.\n\n3. If a nearby tower stays strong, it\'s only a handover, so SANKET stays quiet.\n\n4. It remembers places where you lost signal before, and notices lifts with the barometer (or the motion sensor, on phones without one), so it can act even earlier.\n\nWhen the signal comes back, downloads continue from where they stopped.</string>
     <string name="consent_title">Before you start</string>
-    <string name="consent_text">SANKET watches your phone\'s signal so it can save your downloads before the signal drops.\n\nWhat it reads: the signal of each SIM, whether the internet works, air pressure (to notice lifts) and your location while protection runs.\n\nWhere it goes: nowhere. Everything stays on this phone, encrypted.\n\nWhat it keeps: places where you lost signal, rounded to about 11 m, and a safety log for 30 days.\n\nAndroid will ask about phone calls. SANKET only uses that permission to see your SIM cards; it never makes, reads or records calls.\n\nYou can delete everything at any time under Privacy.</string>
+    <string name="consent_text">SANKET watches your phone\'s signal so it can save your downloads before the signal drops.\n\nWhat it reads: the signal of each SIM, whether the internet works, air pressure or the phone\'s movement (to notice lifts) and your location while protection runs.\n\nWhere it goes: nowhere. Everything stays on this phone, encrypted.\n\nWhat it keeps: places where you lost signal, rounded to about 11 m, and a safety log for 30 days.\n\nAndroid will ask about phone calls. SANKET only uses that permission to see your SIM cards; it never makes, reads or records calls.\n\nYou can delete everything at any time under Privacy.</string>
     <string name="consent_agree">Agree and start</string>
     <string name="places_empty">No places yet. SANKET remembers a place after it loses signal there on two separate visits.</string>
     <string name="place_row">%1$s, %2$s\nLost signal on %3$d%% of visits, %4$s.%5$s</string>
@@ -187,7 +192,7 @@
     <string name="log_empty">Nothing logged yet. Signal losses longer than 10 seconds appear here, with the time and place. The demo is not logged.</string>
     <string name="log_share_title">Share the safety log?</string>
     <string name="log_share_text">It lists the times and rounded places where your phone lost signal. Share it only with people you trust.</string>
-    <string name="privacy_text">SANKET watches your phone\'s signal so it can save your downloads before the signal drops.\n\nWhat it reads: the signal of each SIM, whether the internet works, air pressure (to notice lifts) and your location while protection runs.\n\nWhere it goes: nowhere. Everything stays on this phone, encrypted with a key that can\'t leave the phone. Apart from the downloads you start, SANKET sends nothing to any server.\n\nWhat it keeps: places where you lost signal (rounded to about 11 m and forgotten after some weeks without new losses) and a safety log for 30 days.</string>
+    <string name="privacy_text">SANKET watches your phone\'s signal so it can save your downloads before the signal drops.\n\nWhat it reads: the signal of each SIM, whether the internet works, air pressure or the phone\'s movement (to notice lifts) and your location while protection runs.\n\nWhere it goes: nowhere. Everything stays on this phone, encrypted with a key that can\'t leave the phone. Apart from the downloads you start, SANKET sends nothing to any server.\n\nWhat it keeps: places where you lost signal (rounded to about 11 m and forgotten after some weeks without new losses) and a safety log for 30 days.</string>
     <string name="delete_everything">Delete my data</string>
     <string name="delete_title">Delete everything?</string>
     <string name="delete_confirm">This deletes all places, notes, the safety log and unfinished downloads from this phone. It can\'t be undone.</string>

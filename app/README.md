@@ -42,12 +42,14 @@ The app runs on Android 10 (API 29) and newer. The result is `mobile/build/outpu
 ## How it is organised
 
 - **`core/`**: plain Java with no Android code, so it is tested on a computer. It holds the detector (identical to
-  the study's Python code on all 1,737 reference readings), lift detection, internet health, the 5G early warning,
+  the study's Python code on all 1,737 reference readings), lift detection (barometer, or the accelerometer on
+  phones without one), internet health, the 5G early warning,
   phone calibration, the place memory, the safety log, the offline notice, the policy that combines them, and the
   small rules the screen depends on (link cleaning, file names, retry timing, signal words, outage tracking).
-  44 unit tests.
+  51 unit tests.
 - **`mobile/`**: the Android parts.
-  - `GuardService` reads the radio, the barometer, location and the network once a second while protection runs.
+  - `GuardService` reads the radio, the barometer (or the accelerometer, on phones without one), location and the
+    network once a second while protection runs.
   - `Engine` turns those readings into the status the screen and the notification show.
   - `Transfers` downloads straight into Downloads/SANKET and continues after drops; `ResumeJob` finishes
     downloads after a restart, even when the app is not running.

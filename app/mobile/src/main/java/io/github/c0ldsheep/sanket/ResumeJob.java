@@ -9,6 +9,7 @@ import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkCapabilities;
+import android.net.NetworkRequest;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
@@ -34,13 +35,19 @@ public final class ResumeJob extends JobService {
     static void sync(Context ctx, Transfers transfers) {
         JobScheduler js = ctx.getSystemService(JobScheduler.class);
         if (js == null || executing) return;
-        boolean scheduled = js.getPendingJob(ID) != null;
+        JobInfo pending = js.getPendingJob(ID);
         if (!transfers.busy()) {
-            if (scheduled) js.cancel(ID);
+            if (pending != null) js.cancel(ID);
             return;
         }
-        if (scheduled) return;
-        int network = transfers.onlyWifiWaiting() ? JobInfo.NETWORK_TYPE_UNMETERED : JobInfo.NETWORK_TYPE_ANY;
+        boolean wifi = transfers.onlyWifiWaiting();
+        if (pending != null) {
+            NetworkRequest need = pending.getRequiredNetwork();
+            boolean pendingWifi = need != null && need.hasCapability(NetworkCapabilities.NET_CAPABILITY_NOT_METERED);
+            if (pendingWifi == wifi) return;
+            js.cancel(ID);   // the downloads now wait for a different kind of network
+        }
+        int network = wifi ? JobInfo.NETWORK_TYPE_UNMETERED : JobInfo.NETWORK_TYPE_ANY;
         JobInfo job = new JobInfo.Builder(ID, new ComponentName(ctx, ResumeJob.class))
                 .setRequiredNetworkType(network)
                 .setPersisted(true)
@@ -84,6 +91,7 @@ public final class ResumeJob extends JobService {
         executing = false;
         // Still unfinished, for example because the server is busy: Android runs the job again later.
         jobFinished(p, engine.transfers.busy());
+        sync(this, engine.transfers);   // and on Wi-Fi only, if that is all the downloads now wait for
     }
 
     /** Without the protection service there is no network listener, so tell the downloads what we have. */

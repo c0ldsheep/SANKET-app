@@ -51,6 +51,17 @@ def test_count() -> int:
     return int(m.group(1))
 
 
+APP_PAGE = "https://github.com/c0ldsheep/SANKET-app"
+
+
+def app_facts():
+    """The Android app's version and test count, read from its sources (so the write-up never goes stale)."""
+    app = ROOT.parent / "app"
+    m = re.search(r'versionName = "([^"]+)"', (app / "mobile" / "build.gradle.kts").read_text())
+    tests = sum(f.read_text().count("@Test") for f in (app / "core" / "src" / "test").rglob("*.java"))
+    return (m.group(1) if m else "?"), tests
+
+
 def golden_ticks() -> int:
     g = json.loads((ROOT / "data" / "golden" / "sanket_golden.json").read_text())
     return sum(len(tr["ticks"]) for tr in g["traces"])
@@ -60,6 +71,7 @@ def golden_ticks() -> int:
 # Content (one source for DOCX, PDF and portal text)
 # --------------------------------------------------------------------------------------
 def content(M, team, n_tests, n_ticks):
+    app_v, app_tests = app_facts()
     t, h, dec, e2e = M["test"], M["headline"], M["decay"], M["end_to_end"]
     sk, th, P = t["sanket"], t["threshold"], M["params"]["sanket"]
     fleet = M["fleet"]["main"]["daily"]
@@ -149,16 +161,18 @@ def content(M, team, n_tests, n_ticks):
             f"and figure in about 2 minutes. {n_tests} automated tests check it, including a check that the fast "
             f"tuning code raises exactly the same alarms as the real-time detector.",
             f"JavaScript and Java versions of the detector give exactly the same output as Python on all "
-            f"{n_ticks:,} reference readings. A Termux phone tool logs live 4G readings and raises the alarm, and "
-            f"an interactive dashboard replays the test scenarios with adjustable settings.",
+            f"{n_ticks:,} reference readings. The Java version runs in our Android app (version {app_v}, no "
+            f"third-party libraries, {app_tests} automated tests), which saves downloads before a drop, resumes them "
+            f"afterwards and replays the trip of Fig. 2 as a demo. A Termux phone tool logs live 4G readings, and an "
+            f"interactive dashboard replays the test scenarios with adjustable settings.",
         ]),
         ("fig", SUB / "assets" / "dashboard.png", "Fig. 1. The interactive dashboard replaying the test trip of "
                                                   "Fig. 2: SANKET raised the alarm at 63 s, the link was lost at "
                                                   "79 s, and all four parts of the order data were already on the "
-                                                  "phone.", 5.4),
+                                                  "phone.", 5.0),
         ("fig", FIG / "fig1_anatomy.png", "Fig. 2. A test trip the detector had never seen: a scooter goes down a "
                                           "basement ramp. SANKET warns 16 s before the link is lost, a static "
-                                          "threshold only 2 s before.", 4.8),
+                                          "threshold only 2 s before.", 4.5),
     ]))
     S.append(("Results & Observations", [
         ("ul", [
@@ -193,7 +207,7 @@ def content(M, team, n_tests, n_ticks):
             f"{first_day_ok} (Fig. 6).",
         ]),
         ("fig", FIG / "fig3_tradeoff.png", "Fig. 4. Detection against false alarms on unseen data. The large markers "
-                                           "are the settings chosen on calibration data.", 3.7),
+                                           "are the settings chosen on calibration data.", 3.4),
         ("figrow", [(FIG / "fig5_prefetch_small.png", 2.8), (FIG / "fig6_fleet_small.png", 2.8)],
          "Fig. 5 (left): downloads finished before the loss, by warning time. Fig. 6 (right): dead-zone memory over "
          "7 days."),
@@ -206,7 +220,7 @@ def content(M, team, n_tests, n_ticks):
             "Most real false alarms came from handover zones and street shadows, which the neighbour check filters "
             "out. False alarms must be measured on real recordings: our simulator is calmer than real streets.",
             "Limitations: basement entries are simulated, and the real recordings are from Irish 4G networks. Next: "
-            "record real entries in Navi Mumbai on 4G and 5G, and run the detector in an Android app.",
+            "record real entries in Navi Mumbai on 4G and 5G with the app, to confirm these results in the field.",
         ]),
     ]))
     code, dash = team.get("code_link"), team.get("dashboard_link")
@@ -214,6 +228,7 @@ def content(M, team, n_tests, n_ticks):
         "Interactive dashboard: web/SANKET_dashboard.html in the project folder (opens offline in any browser)"]
     if dash:
         links.append(f"Live dashboard: {dash}")
+    links.append(f"Android app, free test build: {APP_PAGE}")
     if team.get("youtube_link"):
         links.append(f"Demo video: {team['youtube_link']}")
     links.append(f"Remark: signal alone cannot reach 85% at 10 s (section 7); dead-zone memory meets it from day "
@@ -464,6 +479,7 @@ PORTAL_LIMITS = {4: 6000, 5: 6000, 6: 6000, 7: 6000, 8: 6000, 9: 3000}
 
 def portal_boxes(M, team, n_tests, n_ticks):
     """Plain text for the portal's boxes 4-10. ASCII only, so it pastes cleanly into any web form."""
+    app_v, app_tests = app_facts()
     t, h, e2e, dec = M["test"], M["headline"], M["end_to_end"], M["decay"]
     sk, th, P = t["sanket"], t["threshold"], M["params"]["sanket"]
     fleet = M["fleet"]["main"]["daily"]
@@ -515,8 +531,11 @@ def portal_boxes(M, team, n_tests, n_ticks):
         f"one script that reproduces every number and graph in about 2 minutes. {n_tests} automated tests check it, "
         f"including a test that the fast tuning code raises exactly the same alarms as the real-time detector.\n\n"
         f"We also wrote the detector in JavaScript and in Java for Android. Both give exactly the same output as the "
-        f"Python version on all {n_ticks:,} reference readings. A phone tool built on Termux logs live 4G readings "
-        f"and raises the alarm, and an interactive dashboard replays the test scenarios with adjustable settings.\n\n"
+        f"Python version on all {n_ticks:,} reference readings. The Java version runs in our Android app (version "
+        f"{app_v}, {app_tests} automated tests), which saves downloads before a drop, resumes them afterwards and "
+        f"includes a demo that replays the test trip; anyone can install it from {APP_PAGE}. A phone tool built on "
+        f"Termux logs live 4G readings, and an interactive dashboard replays the test scenarios with adjustable "
+        f"settings.\n\n"
         "The attached PDF has the evidence: a dashboard screenshot (Fig. 1), a sample run (Fig. 2), the signal measurements (Fig. 3), the comparison of "
         "all five detectors (table and Fig. 4), the download timing (Fig. 5) and the dead-zone memory results "
         "(Fig. 6).")
@@ -544,8 +563,8 @@ def portal_boxes(M, team, n_tests, n_ticks):
         "that false alarms must be measured on real recordings, because our simulator turned out calmer than real "
         "streets.\n\n"
         "Our main limitation is that the basement entries are simulated and the real recordings come from Ireland. "
-        "Next, we want to record real basement entries in Navi Mumbai with our phone tool and run the detector "
-        "inside an Android app.")
+        "Next, we want to record real basement entries in Navi Mumbai with our phone tool and the app, to confirm "
+        "these results in the field.")
     for k, limit in PORTAL_LIMITS.items():
         if len(box[k]) > limit:
             raise SystemExit(f"portal box {k} is {len(box[k])} characters, over the {limit} limit")
@@ -584,7 +603,7 @@ def build_text(M, team, sections, date_text, path, n_tests, n_ticks):
         out += ["", f"----- Box {k}. {title}  ({len(box[k])} of {PORTAL_LIMITS[k]} characters) -----", box[k],
                 "----- end -----"]
     yt = team.get("youtube_link") or ""
-    other = [x for x in (team.get("code_link"), team.get("dashboard_link")) if x]
+    other = [x for x in (team.get("code_link"), team.get("dashboard_link"), APP_PAGE) if x]
     out += ["", "----- Box 10. YouTube link (optional) -----", yt or "(leave empty if you have no video)",
             "----- end -----", "", "----- Box 10. Other resource links, one per line (optional) -----",
             "\n".join(other) or "(leave empty)", "----- end -----", "",

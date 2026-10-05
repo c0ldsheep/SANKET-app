@@ -10,8 +10,12 @@ first. Every feature below says when it helps, what SANKET does, and how far it 
 - **Built**: in the app and passing Android's code checker, but not yet tried on real phones in real buildings.
 - **Planned**: needs the shared fleet server, which is not built yet.
 
-The app has been checked by 44 automated tests, by Android's lint tool and on an Android 13 emulator. It has
+The app has been checked by 51 automated tests, by Android's lint tool and on an Android 13 emulator. It has
 not yet been tested on real phones in real buildings; that field test is the next step.
+
+**New in 0.3.0 (6 October 2026):** lifts are noticed on phones without a barometer (feature 9), downloads of 100 MB
+or more ask before using mobile data (feature 24), and Battery Saver checks nearby towers less often (feature 17).
+The table at the end shows where each item of the 5 October list of bugs, gaps and ideas is handled.
 
 ---
 
@@ -113,7 +117,12 @@ not yet been tested on real phones in real buildings; that field test is the nex
 - **What SANKET does:** checks the free space before writing and says exactly how much is needed. A download can be
   set to "Only download on Wi-Fi". File names come from the server, keep Hindi and Marathi letters, and get the
   right extension.
-- **Status:** Built and unit-tested.
+- **Big downloads on mobile data (new in 0.3.0):** a download of 100 MB or more waits for Wi-Fi and says why
+  ("Needs 1.00 GB. That's a lot of mobile data, so it waits for Wi-Fi."). **Use mobile data** starts it anyway;
+  otherwise it starts by itself when Wi-Fi is back. A day's data pack in India is often 1.5 to 2 GB.
+- **Status:** Built and unit-tested. The mobile-data question was checked on the emulator with a 1 GB file: it
+  asked, **Use mobile data** started it, the download moved to Wi-Fi without starting again, and a second one
+  started by itself when Wi-Fi came back.
 
 ---
 
@@ -124,7 +133,14 @@ not yet been tested on real phones in real buildings; that field test is the nex
 - **What SANKET does:** air pressure drops about 0.12 hPa for every metre you go up, so the phone's barometer shows
   vertical speed. A lift moves at 1 to 2.5 m/s, much faster than stairs. Fast vertical movement makes SANKET save
   progress straight away, and each lost-signal place is labelled lift, basement or indoors.
-- **Status:** Built and unit-tested. Phones without a barometer skip this. Needs field testing.
+- **Phones without a barometer (new in 0.3.0):** many budget phones have none, so SANKET feels the lift instead. When
+  a lift starts down you are lighter for a second or two, and heavier when it starts up; the stop does the opposite.
+  The motion sensor sees this as a smooth bump in the force it measures (0.3 to 1.2 m/s² for 1 to 3 seconds), while
+  walking, riding or picking up the phone shake it far more. SANKET saves progress at the first bump and labels the
+  place a lift. It cannot tell a basement from an upper floor this way.
+- **Status:** Built and unit-tested (7 tests: lift down and up, walking, a scooter, jolts, a sensor that reads
+  slightly off, no sensor). On the emulator with its barometer switched off, a lift ride played into the motion
+  sensor showed "Lift going down", then "Level" after the stop. Needs field testing.
 
 ### 10. Places this phone remembers
 - **When it helps:** you lose signal in the same lift or basement again and again.
@@ -193,8 +209,10 @@ not yet been tested on real phones in real buildings; that field test is the nex
 - **When it helps:** riders switch off anything that drains the battery or eats data.
 - **What SANKET does:**
   - Runs only while protection is on or a download is running, and stops itself 2 minutes after the last download.
-  - In Battery Saver or below 15%, it turns off GPS and uses network location only.
-  - Reads the barometer in batches; the detector itself takes about 1.4 µs per reading (measured in the study).
+  - In Battery Saver or below 15%, it turns off GPS and uses network location only, and asks the modem for nearby
+    towers every 4 seconds instead of every 2 (new in 0.3.0). The signal itself is still read every second.
+  - Reads the barometer in batches (the motion sensor too, on phones without a barometer); the detector itself
+    takes about 1.4 µs per reading (measured in the study).
   - Saves download progress by time, not every megabyte, so fast 5G downloads are not slowed down.
 - **Status:** Built.
 
@@ -269,9 +287,49 @@ not yet been tested on real phones in real buildings; that field test is the nex
 
 ---
 
+## The 5 October list, item by item
+
+On 5 October we listed 31 bugs, gaps and ideas after reading the app's code. Version 0.2.0 handled 28 of them and
+0.3.0 the rest:
+
+| # | Item | Where it is handled |
+|---|---|---|
+| 1 | Long-press and taps missed while the list refreshed | Rows update in place; Open, Cancel and Clear are plain buttons (6) |
+| 2 | The demo switched protection off | Protection carries on after the demo if it was on (8) |
+| 3 | Airplane mode and mobile data off looked like signal loss | Not logged, no warning, plain words (26) |
+| 4 | A full stop after a shared link broke it | Links are trimmed (7) |
+| 5 | Full storage gave the wrong message | Free space is checked first (24) |
+| 6 | Busy servers gave up at once | Tries again by itself, further apart (23) |
+| 7 | Jio True 5G was blind | 5G fed into the detector, experimental (25) |
+| 8, 9 | Stale readings with the screen off, old neighbour lists | Fresh tower list every 2 s while protecting (3) |
+| 10 | Switching the data SIM looked like a fall | The trend starts afresh (14) |
+| 11 | Too many saves on fast 5G | Saves by time, not by megabyte (17) |
+| 12 | Full phones failed at 100% | Writes straight into Downloads (6) |
+| 13 | Expired links | "Use new link" continues from where it stopped (23) |
+| 14 | A web page saved as the file | Noticed and explained (23) |
+| 15 | Bad file names | Server's name, Indian scripts kept (24) |
+| 16 | Server down, network fine | Keeps retrying, further apart (23) |
+| 17 | Long waits and restarts | A background job finishes downloads (22) |
+| 18, 19 | Location or notifications off | A note with the button that fixes it (28) |
+| 20 | Phone-brand battery savers | Step-by-step settings per brand (28) |
+| 21 | Tiny dropouts flooding the log | Only losses over 10 s are logged (18) |
+| 22 | Repeated alerts | At most one every three minutes (29) |
+| 23 | Open a finished download, clear finished ones | Open and Clear finished buttons (6) |
+| 24 | Progress and Stop in the notification | Done (29) |
+| 25 | Network codes instead of names | Places say "Jio" (10) |
+| 26 | Sharing the safety log | A reminder first (18) |
+| 27 | Big downloads on mobile data | Asks first, 0.3.0 (24) |
+| 28 | Riders can't look at the screen | Two short vibrations (29) |
+| 29 | Low battery | No GPS, fewer tower checks; fewer checks new in 0.3.0 (17) |
+| 30 | Lifts on phones without a barometer | The motion sensor, 0.3.0 (9) |
+| 31 | Quick Settings tile | Done (29) |
+
+---
+
 ## Next steps
 1. **Field test:** basements and lifts in Navi Mumbai on Jio, Airtel and Vi, recorded with the phone tool in
    `research/live`, to confirm features 9, 14, 15 and 25 and tune their thresholds.
 2. **Fleet server:** shared places and notes, the dispatch notice and safety alerts, with Play Integrity checks.
 3. **Hindi and Marathi** screens.
-4. **Website with early sign-up**, then a Play Store release.
+4. **Website:** a one-page site with a 3D story is being built (preview only; it goes live after review). Then a
+   Play Store release.

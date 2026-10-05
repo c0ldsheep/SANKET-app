@@ -154,6 +154,7 @@ tr.mine td:first-child { color: var(--accent); }
 .finding .fig { font-family: var(--font-display); font-size: 2rem; font-weight: 700; line-height: 1.05; }
 .finding p { color: var(--ink-2); max-width: 60ch; }
 footer { color: var(--muted); font-size: 0.85rem; display: grid; gap: 4px; max-width: 90ch; }
+footer a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
 </style>
 <style>body{margin:0}</style>
 </head>
@@ -266,6 +267,7 @@ footer { color: var(--muted); font-size: 0.85rem; display: grid; gap: 4px; max-w
   <footer>
     <p>Real signal: UCC 4G LTE drive-test dataset (Raca, Quinlan, Zahran and Sreenan, ACM MMSys 2018, CC BY 4.0). Basement entries and look-alikes: SANKET physics simulator calibrated on that dataset.</p>
     <p>The detector here is the JavaScript port of the Python reference, checked tick by tick against it (0 mismatches over 1,737 test ticks).</p>
+    <p>The same detector, in Java, runs in the SANKET Android app, which protects real downloads and replays this ramp trip as its demo. Free test build: <a href="https://github.com/c0ldsheep/SANKET-app">github.com/c0ldsheep/SANKET-app</a>.</p>
   </footer>
 </div>
 

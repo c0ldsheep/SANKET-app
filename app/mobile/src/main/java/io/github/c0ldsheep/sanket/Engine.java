@@ -15,6 +15,7 @@ import io.github.c0ldsheep.sanket.core.OfflineNotice;
 import io.github.c0ldsheep.sanket.core.OutageTracker;
 import io.github.c0ldsheep.sanket.core.SafetyLog;
 import io.github.c0ldsheep.sanket.core.SanketDetector;
+import io.github.c0ldsheep.sanket.core.LiftMotion;
 import io.github.c0ldsheep.sanket.core.VerticalMotion;
 import io.github.c0ldsheep.sanket.core.ZoneMemory;
 import java.util.ArrayList;
@@ -84,6 +85,8 @@ final class Engine implements Transfers.Listener {
     private final SafetyLog log = new SafetyLog();
     private final LinkHealth health = new LinkHealth();
     private final VerticalMotion vertical = new VerticalMotion();
+    /** Lift rides felt by the accelerometer, used only on phones without a barometer. */
+    private final LiftMotion lift = new LiftMotion();
     private final OutageTracker outages = new OutageTracker();
     private final Map<String, String> carrierNames;
     private DeviceProfile profile = new DeviceProfile();
@@ -191,7 +194,10 @@ final class Engine implements Transfers.Listener {
     /** The demo was stopped early, so its sample download is not wanted any more. */
     synchronized void dropDemoDownload() { transfers.removeAll(DemoTrace.FILE_URL); }
 
-    synchronized void setLowPower(boolean on) { lowPower = on; }
+    synchronized void setLowPower(boolean on) {
+        lowPower = on;
+        radio.setLowPower(on);
+    }
 
     /** One step: once a second, or four times faster in the demo. Returns false when a demo ends. */
     synchronized boolean tick() {
@@ -295,7 +301,7 @@ final class Engine implements Transfers.Listener {
         in.alarm = alarm && !wifi;
         in.risk = wifi ? 0.0 : risk;
         in.nrFading = !wifi && layer.warning(t);
-        in.movement = demoMode ? VerticalMotion.Movement.LEVEL : vertical.movement(t);
+        in.movement = demoMode ? VerticalMotion.Movement.LEVEL : movement(t);
         in.health = demoMode ? LinkHealth.State.OK : health.state(t);
         in.atKnownZone = near != null && !wifi;
         if (policy.update(t, in)) onLevelChanged(now, op, signal, f, near);
@@ -305,6 +311,13 @@ final class Engine implements Transfers.Listener {
     }
 
     synchronized void onPressure(double t, double hPa) { vertical.onPressure(t, hPa); }
+
+    synchronized void onAccel(double t, float x, float y, float z) { lift.onSample(t, x, y, z); }
+
+    /** The barometer when the phone has one, else lift rides from the accelerometer. */
+    private VerticalMotion.Movement movement(double t) {
+        return vertical.available() ? vertical.movement(t) : lift.movement(t);
+    }
 
     synchronized void onLocation(Location l) {
         if (l == null) return;
@@ -379,7 +392,7 @@ final class Engine implements Transfers.Listener {
             case STARTED: {
                 if (demo != null) return;
                 Location f = recentFix(now, 120_000L);
-                ZoneMemory.Kind kind = vertical.classify(t);
+                ZoneMemory.Kind kind = vertical.available() ? vertical.classify(t) : lift.classify(t);
                 boolean evidence = t - lastDropT <= EVIDENCE_WINDOW_S
                         || kind == ZoneMemory.Kind.LIFT || kind == ZoneMemory.Kind.BASEMENT;
                 String detail = kindText(kind);
@@ -483,9 +496,10 @@ final class Engine implements Transfers.Listener {
         if (!demoMode) {
             s.health = health.state(t);
             s.latencyMs = health.latencyMs();
-            s.barometer = vertical.available();
-            s.movement = vertical.movement(t);
-            s.verticalSpeed = vertical.speed();
+            s.motionSensed = vertical.available() || lift.available();
+            s.liftOnly = !vertical.available() && lift.available();
+            s.movement = movement(t);
+            s.verticalSpeed = vertical.available() ? vertical.speed() : lift.speed(t);
             s.refreshS = profile.samples() >= DeviceProfile.MIN_SAMPLES ? profile.refreshIntervalS() : Double.NaN;
         }
         if (near != null) {

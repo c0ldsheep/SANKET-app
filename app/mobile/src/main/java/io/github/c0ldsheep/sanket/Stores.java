@@ -127,7 +127,8 @@ final class Stores {
                         .put("modified", it.lastModified).put("mime", it.mime).put("state", it.state.name())
                         .put("problem", it.problem.name()).put("code", it.code).put("retryAt", it.retryAtMs)
                         .put("need", it.needBytes).put("free", it.freeBytes).put("attempts", it.attempts)
-                        .put("resumes", it.resumes).put("wifiOnly", it.wifiOnly).put("created", it.createdMs)
+                        .put("resumes", it.resumes).put("wifiOnly", it.wifiOnly).put("mobileOk", it.mobileOk)
+                        .put("created", it.createdMs)
                         .put("finished", it.finishedMs));
             }
             write(TRANSFERS, all.toString());
@@ -161,6 +162,7 @@ final class Stores {
                 it.attempts = o.optInt("attempts", 0);
                 it.resumes = o.optInt("resumes", 0);
                 it.wifiOnly = o.optBoolean("wifiOnly", false);
+                it.mobileOk = o.optBoolean("mobileOk", false);
                 it.finishedMs = o.optLong("finished", 0L);
                 items.add(it);
             }

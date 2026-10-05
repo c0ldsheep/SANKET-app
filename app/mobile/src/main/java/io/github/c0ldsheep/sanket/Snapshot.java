@@ -54,7 +54,10 @@ final class Snapshot {
     List<Sim> sims = Collections.emptyList();
     LinkHealth.State health = LinkHealth.State.OK;
     double latencyMs = Double.NaN;
-    boolean barometer;
+    /** Lifts can be sensed: by the barometer, or by the accelerometer on phones without one. */
+    boolean motionSensed;
+    /** Sensed by the accelerometer, which knows lift rides but not ramps or stairs. */
+    boolean liftOnly;
     VerticalMotion.Movement movement = VerticalMotion.Movement.LEVEL;
     double verticalSpeed;
     /** Seconds between this phone's signal refreshes, or NaN while still learning. */

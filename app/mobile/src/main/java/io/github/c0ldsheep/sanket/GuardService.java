@@ -31,7 +31,8 @@ import java.util.List;
 
 /**
  * Runs protection in the background while the user wants it, or while downloads are active. It
- * feeds {@link Engine} once a second from the radio, the barometer, location and the network, and
+ * feeds {@link Engine} once a second from the radio, the barometer (or, on phones without one, the
+ * accelerometer), location and the network, and
  * shows the status as a notification. When it was started only for downloads it stops itself two
  * minutes after the last one, so it uses battery only while it helps.
  */
@@ -73,10 +74,16 @@ public final class GuardService extends Service implements Engine.Listener {
 
     private final SensorEventListener pressure = new SensorEventListener() {
         @Override
+        public void onSensorChanged(SensorEvent event) { engine.onPressure(stamp(event), event.values[0]); }
+
+        @Override
+        public void onAccuracyChanged(Sensor sensor, int accuracy) { }
+    };
+
+    private final SensorEventListener motion = new SensorEventListener() {
+        @Override
         public void onSensorChanged(SensorEvent event) {
-            long now = SystemClock.elapsedRealtimeNanos();
-            long stamp = Math.abs(event.timestamp - now) < 10_000_000_000L ? event.timestamp : now;
-            engine.onPressure(stamp / 1e9, event.values[0]);
+            engine.onAccel(stamp(event), event.values[0], event.values[1], event.values[2]);
         }
 
         @Override
@@ -280,7 +287,10 @@ public final class GuardService extends Service implements Engine.Listener {
         handler.postDelayed(tick, demo ? 250L : 1000L);
     }
 
-    /** In Battery Saver or below 15%, SANKET stops using GPS; network location is enough for places. */
+    /**
+     * In Battery Saver or below 15%, SANKET stops using GPS (network location is enough for places) and asks the
+     * modem for nearby towers less often.
+     */
     private void checkPower() {
         PowerManager pm = getSystemService(PowerManager.class);
         BatteryManager bm = getSystemService(BatteryManager.class);
@@ -307,6 +317,10 @@ public final class GuardService extends Service implements Engine.Listener {
         Sensor barometer = sensors == null ? null : sensors.getDefaultSensor(Sensor.TYPE_PRESSURE);
         if (barometer != null) {
             sensors.registerListener(pressure, barometer, SensorManager.SENSOR_DELAY_NORMAL, 1_000_000, handler);
+        } else if (sensors != null) {
+            // No barometer: feel lift rides instead. 25 readings a second, delivered in one-second batches.
+            Sensor accel = sensors.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+            if (accel != null) sensors.registerListener(motion, accel, 40_000, 1_000_000, handler);
         }
         if (connectivity != null) connectivity.registerDefaultNetworkCallback(network, handler);
         if (locations != null
@@ -330,7 +344,10 @@ public final class GuardService extends Service implements Engine.Listener {
     }
 
     private void unregisterInputs() {
-        if (sensors != null) sensors.unregisterListener(pressure);
+        if (sensors != null) {
+            sensors.unregisterListener(pressure);
+            sensors.unregisterListener(motion);
+        }
         if (connectivity != null) {
             try {
                 connectivity.unregisterNetworkCallback(network);
@@ -340,6 +357,12 @@ public final class GuardService extends Service implements Engine.Listener {
         }
         if (locations != null) locations.removeUpdates(location);
         inputs = false;
+    }
+
+    /** A sensor reading's time in seconds on the elapsed-realtime clock; some phones stamp readings oddly. */
+    private static double stamp(SensorEvent event) {
+        long now = SystemClock.elapsedRealtimeNanos();
+        return (Math.abs(event.timestamp - now) < 10_000_000_000L ? event.timestamp : now) / 1e9;
     }
 
     private void goForeground() {

@@ -92,9 +92,12 @@ final class RadioReader {
 
     private static final String TAG = "SanketRadio";
     private static final long FRESH_EVERY_MS = 2_000L;
+    /** In Battery Saver or below 15%, the modem is asked half as often; the signal itself is still read every second. */
+    private static final long FRESH_EVERY_LOW_POWER_MS = 4_000L;
     private static final long FRESH_MAX_AGE_MS = 10_000L;
 
     private final Context ctx;
+    private volatile boolean lowPower;
     private final TelephonyManager telephony;
     private final SubscriptionManager subscriptions;
     // Written by the modem's callback thread, read by the service's worker thread.
@@ -149,13 +152,15 @@ final class RadioReader {
         }
     }
 
+    void setLowPower(boolean on) { lowPower = on; }
+
     /** The data SIM's cells: a fresh list when the modem sent one recently, otherwise the saved one. */
     private List<CellInfo> cells(TelephonyManager tm, int sub) {
         if (ctx.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return null;
         }
         long now = SystemClock.elapsedRealtime();
-        if (now - requestedAtMs >= FRESH_EVERY_MS) {
+        if (now - requestedAtMs >= (lowPower ? FRESH_EVERY_LOW_POWER_MS : FRESH_EVERY_MS)) {
             requestedAtMs = now;
             try {
                 tm.requestCellInfoUpdate(Runnable::run, new TelephonyManager.CellInfoCallback() {

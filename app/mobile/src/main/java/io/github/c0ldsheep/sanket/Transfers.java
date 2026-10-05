@@ -6,6 +6,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
+import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -49,7 +50,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * connection breaks the download waits instead of failing; when the network is back it asks only
  * for the missing bytes, guarded by the ETag or Last-Modified date so that a changed file is
  * never stitched onto an old one. Busy or unreachable servers are tried again by themselves,
- * further apart each time.
+ * further apart each time. A big file on mobile data waits for Wi-Fi unless the user says otherwise.
  */
 final class Transfers {
     enum State { QUEUED, RUNNING, WAITING, DONE, FAILED }
@@ -57,7 +58,7 @@ final class Transfers {
     /** Why a download is waiting or stopped. The screen turns this into words. */
     enum Problem {
         NONE, RETRYING, NO_NETWORK, WIFI_ONLY, SERVER_UNREACHABLE, SERVER_BUSY, LINK_EXPIRED, NOT_FOUND, NOT_A_FILE,
-        NO_SPACE, HTTP_ERROR
+        NO_SPACE, HTTP_ERROR, ASK_MOBILE
     }
 
     /** Why there is no network on purpose, so "waiting" can say what to do. */
@@ -100,6 +101,8 @@ final class Transfers {
         volatile int attempts;
         volatile int resumes;
         volatile boolean wifiOnly;
+        /** The user said yes to a big download on mobile data. */
+        volatile boolean mobileOk;
         volatile boolean cancelled;
         volatile long finishedMs;
         /** The demo's sample download, paced so people can watch it. Not saved: after a restart it is ordinary. */
@@ -131,12 +134,15 @@ final class Transfers {
     private static final long SYNC_EVERY_MS = 1_000L;
     private static final long PERSIST_EVERY_MS = 2_000L;
     private static final long SPACE_MARGIN = 20L << 20;
+    /** Downloads this big ask before using mobile data: a day's data pack in India is often 1.5 to 2 GB. */
+    static final long ASK_MOBILE_BYTES = 100L << 20;
     private static final int BUFFER = 64 * 1024;
     /** The demo's pace: the replayed drop catches its sample download about two thirds of the way through. */
     private static final long DEMO_BYTES_PER_S = 150L * 1024L;
 
     private final ContentResolver resolver;
     private final StorageManager storage;
+    private final ConnectivityManager connectivity;
     private final Stores stores;
     private final Listener listener;
     private final List<Item> items = new CopyOnWriteArrayList<>();
@@ -153,6 +159,7 @@ final class Transfers {
     Transfers(Context ctx, Stores stores, Listener listener) {
         resolver = ctx.getContentResolver();
         storage = ctx.getSystemService(StorageManager.class);
+        connectivity = ctx.getSystemService(ConnectivityManager.class);
         this.stores = stores;
         this.listener = listener;
         for (Item it : stores.loadTransfers()) {
@@ -217,7 +224,8 @@ final class Transfers {
         boolean any = false;
         for (Item it : items) {
             if (!it.busy()) continue;
-            if (!it.wifiOnly) return false;
+            boolean askedMobile = it.problem == Problem.ASK_MOBILE && !it.mobileOk;
+            if (!it.wifiOnly && !askedMobile) return false;
             any = true;
         }
         return any;
@@ -278,6 +286,12 @@ final class Transfers {
         start(it);
         persist(true);
         listener.onChanged();
+    }
+
+    /** The user agreed to download this big file on mobile data. */
+    void allowMobile(Item it) {
+        it.mobileOk = true;
+        retry(it);
     }
 
     /** Continues with a fresh link, for example after the old one expired. False if it is not https. */
@@ -342,6 +356,9 @@ final class Transfers {
                 it.problem = Problem.WIFI_ONLY;
             }
             return;
+        }
+        if (it.problem == Problem.ASK_MOBILE && !it.mobileOk && metered()) {
+            return;   // still on mobile data: it waits for Wi-Fi, or for the user to allow mobile data
         }
         if (demoLoss) {
             // The demo's ride is underground: wait, as a real download would.
@@ -434,6 +451,12 @@ final class Transfers {
                     it.needBytes = need;
                     it.freeBytes = free;
                     fail(it, Problem.NO_SPACE, 0);
+                    return;
+                }
+                if (need >= ASK_MOBILE_BYTES && !it.mobileOk && !it.demo && metered()) {
+                    it.state = State.WAITING;
+                    it.problem = Problem.ASK_MOBILE;
+                    persist(true);
                     return;
                 }
             }
@@ -656,6 +679,11 @@ final class Transfers {
         } catch (RejectedExecutionException e) {
             deleteEntry(uri);
         }
+    }
+
+    /** Mobile data, or a phone hotspot: Android's own answer, current even before the first network callback. */
+    private boolean metered() {
+        return connectivity == null || connectivity.isActiveNetworkMetered();
     }
 
     private long freeBytes() {

@@ -513,13 +513,15 @@ public final class MainActivity extends Activity {
             internetRow.set(getString(R.string.internet), sub, value);
         }
 
-        movementRow.show(live && s.barometer);
-        if (live && s.barometer) {
+        movementRow.show(live && s.motionSensed);
+        if (live && s.motionSensed) {
             boolean fast = s.movement != VerticalMotion.Movement.LEVEL;
-            String value = s.movement == VerticalMotion.Movement.UP_FAST ? getString(R.string.move_up, s.verticalSpeed)
-                    : s.movement == VerticalMotion.Movement.DOWN_FAST ? getString(R.string.move_down, -s.verticalSpeed)
-                    : getString(R.string.move_level);
-            movementRow.set(getString(R.string.movement), fast ? getString(R.string.move_sub) : null, value);
+            boolean up = s.movement == VerticalMotion.Movement.UP_FAST;
+            String value = !fast ? getString(R.string.move_level)
+                    : s.liftOnly ? getString(up ? R.string.move_lift_up : R.string.move_lift_down)
+                    : up ? getString(R.string.move_up, s.verticalSpeed) : getString(R.string.move_down, -s.verticalSpeed);
+            String sub = fast ? getString(R.string.move_sub) : s.liftOnly ? getString(R.string.move_sub_accel) : null;
+            movementRow.set(getString(R.string.movement), sub, value);
         }
 
         phoneRow.show(live);
@@ -932,6 +934,8 @@ public final class MainActivity extends Activity {
                         return getString(R.string.dl_retrying);
                     case WIFI_ONLY:
                         return getString(R.string.dl_waiting_wifi);
+                    case ASK_MOBILE:
+                        return getString(R.string.dl_ask_mobile, Transfers.human(Math.max(0L, it.size - it.durable)));
                     case SERVER_UNREACHABLE:
                         return getString(R.string.dl_server_unreachable, until(it.retryAtMs));
                     case SERVER_BUSY:
@@ -1006,7 +1010,8 @@ public final class MainActivity extends Activity {
                     button(secondary, R.string.dl_cancel);
                     break;
                 case WAITING:
-                    button(primary, it.problem == Transfers.Problem.WIFI_ONLY ? 0 : R.string.dl_try_now);
+                    button(primary, it.problem == Transfers.Problem.WIFI_ONLY ? 0
+                            : it.problem == Transfers.Problem.ASK_MOBILE ? R.string.dl_use_mobile : R.string.dl_try_now);
                     button(secondary, R.string.dl_cancel);
                     break;
                 default:
@@ -1031,6 +1036,9 @@ public final class MainActivity extends Activity {
             open(it);
         } else if (it.state == Transfers.State.FAILED && needsNewLink(it)) {
             showLinkDialog(null, it);
+        } else if (it.problem == Transfers.Problem.ASK_MOBILE) {
+            engine.transfers.allowMobile(it);
+            ensureService();
         } else {
             engine.transfers.retry(it);
             ensureService();
