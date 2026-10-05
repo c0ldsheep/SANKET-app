@@ -7,9 +7,10 @@ PRAYAS problem PRAYAS-COMP-26-S-020 at Terna Engineering College (mentor: Dr. Ro
 | Folder | What it is | Status |
 |---|---|---|
 | [`research/`](research) | The PRAYAS study: a simulator calibrated on 52.4 h of real 4G recordings, five detectors compared fairly on unseen data, results and an interactive dashboard | Complete |
-| [`app/`](app) | The Android app built on the study: protected downloads, lift detection, a memory of dead zones, a safety log | Builds cleanly and passes its tests; field testing is next |
+| [`app/`](app) | The Android app built on the study: protected downloads, lift detection, a memory of dead zones, a safety log | Unit-tested and checked on an Android 13 emulator; field testing is next |
 
-**Every feature, the situation it helps in and its status: [FEATURES.md](FEATURES.md).**
+**Every feature, the situation it helps in and its status: [FEATURES.md](FEATURES.md).** The test build of the app
+is on the [Releases](../../releases) page.
 
 ## What the study found (unseen test data)
 
@@ -29,7 +30,7 @@ cd research && ./setup.sh                                       # the study: ins
 ./.venv/bin/python experiments/run_all.py --reuse-params       # reproduces every number and figure (about 2 min)
 open web/SANKET_dashboard.html                                  # interactive dashboard, works offline
 
-cd app && ./gradlew :core:test :mobile:assembleDebug            # the Android app and its 28 unit tests
+cd app && ./gradlew :core:test :mobile:assembleDebug            # the Android app and its 44 unit tests
 ```
 
 ## Credits
