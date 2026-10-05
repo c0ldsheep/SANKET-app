@@ -102,6 +102,8 @@ final class Transfers {
         volatile boolean wifiOnly;
         volatile boolean cancelled;
         volatile long finishedMs;
+        /** The demo's sample download, paced so people can watch it. Not saved: after a restart it is ordinary. */
+        volatile boolean demo;
 
         Item(String id, String url, String name, long createdMs) {
             this.id = id;
@@ -130,6 +132,8 @@ final class Transfers {
     private static final long PERSIST_EVERY_MS = 2_000L;
     private static final long SPACE_MARGIN = 20L << 20;
     private static final int BUFFER = 64 * 1024;
+    /** The demo's pace: the replayed drop catches its sample download about two thirds of the way through. */
+    private static final long DEMO_BYTES_PER_S = 150L * 1024L;
 
     private final ContentResolver resolver;
     private final StorageManager storage;
@@ -144,6 +148,7 @@ final class Transfers {
     private volatile boolean networkOk = true;
     private volatile boolean unmetered;
     private volatile Offline offline = Offline.NONE;
+    private volatile boolean demoLoss;
 
     Transfers(Context ctx, Stores stores, Listener listener) {
         resolver = ctx.getContentResolver();
@@ -161,7 +166,10 @@ final class Transfers {
     }
 
     /** Starts downloading an https link. */
-    Added add(String link, boolean wifiOnly) {
+    Added add(String link, boolean wifiOnly) { return add(link, wifiOnly, false); }
+
+    /** Starts downloading an https link; {@code demo} marks the demo's sample download. */
+    Added add(String link, boolean wifiOnly, boolean demo) {
         Uri u = Uri.parse(link == null ? "" : link.trim());
         if (!secure(u)) return Added.NOT_HTTPS;
         String url = u.toString();
@@ -171,6 +179,7 @@ final class Transfers {
         Item it = new Item(UUID.randomUUID().toString(), url, FileNames.choose(null, u.getLastPathSegment(), null),
                 System.currentTimeMillis());
         it.wifiOnly = wifiOnly;
+        it.demo = demo;
         items.add(0, it);
         persist(true);
         start(it);
@@ -229,6 +238,28 @@ final class Transfers {
 
     Offline offline() { return offline; }
 
+    /**
+     * The demo's recorded ride lost, or got back, its signal. Downloads pause and continue exactly as after a real
+     * drop, although the phone's own network never went away.
+     */
+    void setDemoLoss(boolean lost) {
+        if (demoLoss == lost) return;
+        demoLoss = lost;
+        if (!lost) resumeWaiting();
+    }
+
+    /** Removes every download of this link, finished files included. The demo uses it to start afresh. */
+    void removeAll(String url) {
+        for (Item it : items) {
+            if (!it.url.equals(url)) continue;
+            it.cancelled = true;
+            items.remove(it);
+            if (!it.uri.isEmpty()) deleteLater(it.uri);
+        }
+        persist(true);
+        listener.onChanged();
+    }
+
     void resumeWaiting() {
         for (Item it : items) {
             if (it.state == State.WAITING) {
@@ -262,14 +293,7 @@ final class Transfers {
     void cancel(Item it) {
         it.cancelled = true;
         items.remove(it);
-        String uri = it.uri;
-        if (it.state != State.DONE && !uri.isEmpty()) {
-            try {
-                pool.execute(() -> deleteEntry(uri));
-            } catch (RejectedExecutionException e) {
-                deleteEntry(uri);
-            }
-        }
+        if (it.state != State.DONE && !it.uri.isEmpty()) deleteLater(it.uri);
         persist(true);
         listener.onChanged();
     }
@@ -303,7 +327,9 @@ final class Transfers {
     static Intent viewIntent(Item it) {
         if (it.uri.isEmpty()) return new Intent(DownloadManager.ACTION_VIEW_DOWNLOADS);
         Intent view = new Intent(Intent.ACTION_VIEW);
-        view.setDataAndType(Uri.parse(it.uri), it.mime.isEmpty() ? null : it.mime);
+        // A generic type tells viewers nothing; Downloads knows the real one from the file name.
+        String type = it.mime.isEmpty() || it.mime.endsWith("octet-stream") ? null : it.mime;
+        view.setDataAndType(Uri.parse(it.uri), type);
         view.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
         return view;
     }
@@ -314,6 +340,14 @@ final class Transfers {
             if (it.state != State.FAILED && it.state != State.RUNNING) {
                 it.state = State.WAITING;
                 it.problem = Problem.WIFI_ONLY;
+            }
+            return;
+        }
+        if (demoLoss) {
+            // The demo's ride is underground: wait, as a real download would.
+            if (it.state != State.FAILED && it.state != State.RUNNING) {
+                it.state = State.WAITING;
+                it.problem = Problem.NO_NETWORK;
             }
             return;
         }
@@ -433,13 +467,16 @@ final class Transfers {
             byte[] buf = new byte[BUFFER];
             long unsynced = 0L;
             long syncedAt = SystemClock.elapsedRealtime();
+            long paceFrom = syncedAt;
             try {
                 int n;
                 while ((n = in.read(buf)) != -1) {
                     if (it.cancelled) return;
+                    if (demoLoss) throw new IOException("The demo's ride lost its signal");
                     out.write(buf, 0, n);
                     it.received += n;
                     unsynced += n;
+                    if (it.demo) pace(paceFrom, it.received - have);
                     long now = SystemClock.elapsedRealtime();
                     long mark = checkpoint.get();
                     if (mark != seen || (unsynced >= SYNC_BYTES && now - syncedAt >= SYNC_EVERY_MS)) {
@@ -453,6 +490,18 @@ final class Transfers {
                 // Keep everything that arrived, even when the network broke mid-block.
                 if (!it.cancelled) sync(pfd, it);
             }
+        }
+    }
+
+    /** Waits until {@code bytes} would have arrived at the demo's pace. */
+    private static void pace(long fromMs, long bytes) throws IOException {
+        long wait = fromMs + bytes * 1000L / DEMO_BYTES_PER_S - SystemClock.elapsedRealtime();
+        if (wait <= 0L) return;
+        try {
+            Thread.sleep(wait);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IOException("Interrupted", e);
         }
     }
 
@@ -488,7 +537,7 @@ final class Transfers {
             return;
         }
         it.state = State.WAITING;
-        if (!networkOk || offline != Offline.NONE) {
+        if (!networkOk || offline != Offline.NONE || demoLoss) {
             it.problem = Problem.NO_NETWORK;
             it.quickRetries = 0;
         } else if (it.quickRetries < QUICK_RETRIES) {
@@ -597,6 +646,15 @@ final class Transfers {
             resolver.delete(Uri.parse(uri), null, null);
         } catch (RuntimeException e) {
             Log.w(TAG, "Could not delete " + uri, e);
+        }
+    }
+
+    /** Deletes off the caller's thread when the pool still runs. */
+    private void deleteLater(String uri) {
+        try {
+            pool.execute(() -> deleteEntry(uri));
+        } catch (RejectedExecutionException e) {
+            deleteEntry(uri);
         }
     }
 

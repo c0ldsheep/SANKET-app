@@ -153,8 +153,12 @@ public final class GuardService extends Service implements Engine.Listener {
             if (ACTION_DEMO.equals(action)) {
                 begin(true);
             } else if (ACTION_STOP_DEMO.equals(action)) {
-                if (demo) endDemo();
-                else if (!active) stopSelf();   // the demo had already ended
+                if (demo) {
+                    engine.dropDemoDownload();
+                    endDemo();
+                } else if (!active) {
+                    stopSelf();   // the demo had already ended
+                }
             } else if (!active || demo) {
                 if (!demo) begin(false);
                 else engine.setProtecting(manual);
@@ -200,7 +204,11 @@ public final class GuardService extends Service implements Engine.Listener {
     public void onLevelChanged(GuardPolicy.Level level, boolean downloadsActive) {
         notifyStatus();
         long now = SystemClock.elapsedRealtime();
-        if (level == GuardPolicy.Level.PROTECT && downloadsActive && !demo && now - alertedAt >= ALERT_GAP_MS) {
+        if (level != GuardPolicy.Level.PROTECT || !downloadsActive) return;
+        if (demo) {
+            // The real warning, labelled, and without holding back the next real one.
+            Notes.alert(this, getString(R.string.alert_drop_title_demo), getString(R.string.alert_drop_text));
+        } else if (now - alertedAt >= ALERT_GAP_MS) {
             alertedAt = now;
             Notes.alert(this, getString(R.string.alert_drop_title), getString(R.string.alert_drop_text));
         }

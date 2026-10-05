@@ -84,8 +84,11 @@ not yet been tested on real phones in real buildings; that field test is the nex
 ### 8. Demo trip
 - **When it helps:** showing the project without going to a basement.
 - **What SANKET does:** replays the study's test trip (a scooter going down a basement ramp) through the real app,
-  clearly labelled "Demo replay". The alarm fires at 63 s, 16 s before the signal disappears at 79 s. When the
-  demo ends, real protection carries on if it was on.
+  clearly labelled "Demo replay", while it downloads a 4 MB sample map. The alarm fires at 63 s, 16 s before the
+  signal disappears at 79 s, with the real warning marked "Demo". The download pauses when the replayed signal
+  dies and finishes from the same point when the demo ends. Real protection carries on afterwards if it was on.
+- **Result on the emulator:** the sample paused at 2.7 MB of 4.0 MB, continued from there, and finished byte for
+  byte identical to the original (same SHA-256).
 - **Status:** Checked on an emulator.
 
 ### 22. Downloads finish after a restart

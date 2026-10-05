@@ -91,6 +91,7 @@ final class Engine implements Transfers.Listener {
     private GuardPolicy policy = new GuardPolicy();
     private SanketDetector detector;
     private DemoTrace demo;
+    private boolean demoHadSignal;
     private Listener listener;
     private volatile Snapshot snapshot = Snapshot.idle();
 
@@ -166,11 +167,19 @@ final class Engine implements Transfers.Listener {
         visiting = null;
         noticeBackS = 0;
         lastDropT = Double.NEGATIVE_INFINITY;
+        demoHadSignal = false;
+        transfers.setDemoLoss(false);
+        if (demoMode) {
+            // A sample download, so the demo shows what happens to a real file when the ride loses its signal.
+            transfers.removeAll(DemoTrace.FILE_URL);
+            transfers.add(DemoTrace.FILE_URL, false, true);
+        }
         running = true;
     }
 
     synchronized void stop() {
         if (running && demo == null) save();
+        transfers.setDemoLoss(false);
         running = false;
         demo = null;
         listener = null;
@@ -178,6 +187,9 @@ final class Engine implements Transfers.Listener {
     }
 
     synchronized void setProtecting(boolean on) { protecting = on; }
+
+    /** The demo was stopped early, so its sample download is not wanted any more. */
+    synchronized void dropDemoDownload() { transfers.removeAll(DemoTrace.FILE_URL); }
 
     synchronized void setLowPower(boolean on) { lowPower = on; }
 
@@ -251,6 +263,11 @@ final class Engine implements Transfers.Listener {
         if (alarm || risk >= WATCH_RISK) lastDropT = t;
         boolean wifi = !demoMode && onWifi;
         boolean cellular = tech != Snapshot.Tech.NONE;
+        if (demoMode) {
+            // The recorded ride going underground pauses downloads, as a real drop would.
+            if (cellular) demoHadSignal = true;
+            transfers.setDemoLoss(demoHadSignal && !cellular);
+        }
         String op = data == null ? "" : data.operator;
 
         Snapshot.Offline offline = Snapshot.Offline.NONE;

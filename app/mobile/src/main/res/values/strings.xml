@@ -34,7 +34,7 @@
     <string name="stop_demo">Stop the demo</string>
     <string name="protect_hint_off">Uses location and the barometer only while it runs.</string>
     <string name="protect_hint_on">Runs in the background, so you can close the app.</string>
-    <string name="protect_hint_demo">A recorded ride is playing. Protection carries on after it.</string>
+    <string name="protect_hint_demo">A recorded ride is playing, with a sample map download. Protection carries on after it.</string>
     <string name="protect_hint_downloads">Watching the signal while your downloads run. Turn on protection to keep watching after they finish.</string>
 
     <!-- Things to fix -->
@@ -163,7 +163,7 @@
     <string name="safety_log">Safety log</string>
     <string name="safety_log_sub">Every signal loss, with the time and place</string>
     <string name="demo">Try the demo</string>
-    <string name="demo_sub">Replays a real ride down a basement ramp</string>
+    <string name="demo_sub">A real ramp ride, replayed, with a sample download</string>
     <string name="keep_running">Keep SANKET running</string>
     <string name="keep_running_sub">Battery settings for your phone</string>
     <string name="privacy">Privacy</string>
@@ -184,7 +184,7 @@
     <string name="close">Close</string>
     <string name="cancel">Cancel</string>
     <string name="share">Share</string>
-    <string name="log_empty">Nothing logged yet. Signal losses longer than 10 seconds appear here, with the time and place.</string>
+    <string name="log_empty">Nothing logged yet. Signal losses longer than 10 seconds appear here, with the time and place. The demo is not logged.</string>
     <string name="log_share_title">Share the safety log?</string>
     <string name="log_share_text">It lists the times and rounded places where your phone lost signal. Share it only with people you trust.</string>
     <string name="privacy_text">SANKET watches your phone\'s signal so it can save your downloads before the signal drops.\n\nWhat it reads: the signal of each SIM, whether the internet works, air pressure (to notice lifts) and your location while protection runs.\n\nWhere it goes: nowhere. Everything stays on this phone, encrypted with a key that can\'t leave the phone. Apart from the downloads you start, SANKET sends nothing to any server.\n\nWhat it keeps: places where you lost signal (rounded to about 11 m and forgotten after some weeks without new losses) and a safety log for 30 days.</string>
@@ -222,6 +222,7 @@
     </plurals>
     <string name="action_stop">Stop protection</string>
     <string name="alert_drop_title">Signal may drop soon</string>
+    <string name="alert_drop_title_demo">Demo: signal may drop soon</string>
     <string name="alert_drop_text">Your downloads are saved. They continue by themselves if the signal goes.</string>
     <plurals name="alert_long_title">
         <item quantity="one">You were offline for %d minute</item>

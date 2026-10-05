@@ -13,8 +13,8 @@ over the old one and keeps your data.
 
 This repository is private, so its Releases page works only for people logged in to GitHub with access. Anyone else
 gets GitHub's "Not Found" reply instead of the app, and if that reply is saved under the APK's name, Android says
-"There was a problem parsing the package". That happened with 0.2.0. So test builds go on the public download
-page, and each one is checked the way a stranger would get it:
+"There was a problem parsing the package". So test builds go on the public download page, and each one is checked
+the way a stranger would get it:
 
 1. Build and check: `./gradlew :core:test :mobile:lintDebug :mobile:assembleDebug`, then
    `apksigner verify --print-certs` on the APK. The certificate must stay the same, or updates will fail.
@@ -24,6 +24,9 @@ page, and each one is checked the way a stranger would get it:
 4. Download the link with no login, in a private browser window or with `curl -L`. It must give the same size and
    SHA-256.
 5. Install it on a phone from that link.
+
+If a good file (right size and SHA-256) still shows that error, the phone's installer is stuck: delete the APKs in
+Downloads and restart the phone. That is what fixed 0.2.0 on an OPPO phone, where even 0.1.0 had started failing.
 
 ## Build
 
@@ -78,7 +81,8 @@ The look is described in [DESIGN.md](DESIGN.md).
 - 44 unit tests in `core/`, and Android lint with no issues.
 - On an Android 13 emulator: every screen in light and dark mode; the demo trip; a real 8.6 MB download cut three
   times (once by airplane mode) and a 16.1 MB download interrupted by a phone restart, both byte for byte identical
-  to direct downloads; the fix-it hints; the Quick Settings tile; and 3G fallback.
+  to direct downloads; the demo's sample download, paused by the replayed drop and finished identical to the
+  original; the fix-it hints; the Quick Settings tile; and 3G fallback.
 
 ## Limits today
 
