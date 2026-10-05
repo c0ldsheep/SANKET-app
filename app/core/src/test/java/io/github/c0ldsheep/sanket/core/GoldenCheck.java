@@ -1,4 +1,4 @@
-package org.sanket;
+package io.github.c0ldsheep.sanket.core;
 
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -9,13 +9,19 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Replays data/golden/sanket_golden.json (produced by the Python reference) through the Java
+ * Replays sanket_golden.json (produced by the Python reference) through the Java
  * port. Alarms and measurement counts must match exactly; filter states to 1e-6 (the golden
- * file stores 6 decimals). Usage: java -cp out org.sanket.GoldenCheck path/to/sanket_golden.json
+ * file stores 6 decimals). Usage: java -cp out io.github.c0ldsheep.sanket.core.GoldenCheck path/to/sanket_golden.json
  */
 public final class GoldenCheck {
     public static void main(String[] args) throws Exception {
-        String text = new String(Files.readAllBytes(Paths.get(args[0])), StandardCharsets.UTF_8);
+        int[] r = run(new String(Files.readAllBytes(Paths.get(args[0])), StandardCharsets.UTF_8));
+        System.out.println(r[0] + " traces, " + r[1] + " ticks, " + r[2] + " alarms, " + r[3] + " mismatches");
+        System.exit(r[3] == 0 ? 0 : 1);
+    }
+
+    /** Replays the golden file and returns {traces, ticks, alarms, mismatches}. */
+    static int[] run(String text) {
         @SuppressWarnings("unchecked")
         Map<String, Object> g = (Map<String, Object>) new Json(text).value();
         @SuppressWarnings("unchecked")
@@ -42,8 +48,7 @@ public final class GoldenCheck {
                 }
             }
         }
-        System.out.println(traces + " traces, " + ticks + " ticks, " + alarms + " alarms, " + bad + " mismatches");
-        System.exit(bad == 0 ? 0 : 1);
+        return new int[] {traces, ticks, alarms, bad};
     }
 
     static boolean close(double a, double b) { return Math.abs(a - b) <= 1e-6 * Math.max(1.0, Math.abs(b)); }

@@ -1,6 +1,6 @@
 # Putting SANKET inside a delivery app (Android)
 
-`src/org/sanket/SanketDetector.java` is the detector itself: plain Java, no Android imports,
+`app/core/.../SanketDetector.java` (in the app) is the detector itself: plain Java, no Android imports,
 **verified tick-for-tick against the Python reference** (`GoldenCheck` replays 1,737 golden ticks,
 0 mismatches). This page shows how an app would feed it. The Kotlin below is illustrative: it
 was not compiled in this repository (no Android SDK here). The API facts were checked against
@@ -66,8 +66,5 @@ when no order is active. There is no polling of the radio and no extra wakelock.
 ## 4. Build and verify the Java port on a laptop
 
 ```bash
-JDK=/opt/homebrew/opt/openjdk/bin          # any JDK 11+
-$JDK/javac -d /tmp/sanket android/src/org/sanket/*.java
-$JDK/java -cp /tmp/sanket org.sanket.GoldenCheck data/golden/sanket_golden.json
-# -> 13 traces, 1737 ticks, 10 alarms, 0 mismatches
+cd app && ./gradlew :core:test   # includes GoldenVectorsTest: 13 traces, 1737 ticks, 10 alarms, 0 mismatches
 ```

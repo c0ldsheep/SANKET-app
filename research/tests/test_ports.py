@@ -41,12 +41,13 @@ def _jdk():
 @pytest.mark.skipif(_jdk() is None, reason="no working JDK")
 def test_java_port_matches_golden(tmp_path):
     javac, java = _jdk()
-    src = ROOT / "android" / "src"
-    files = [str(p) for p in src.rglob("*.java")]
-    assert files, "android sources missing"
+    core = ROOT.parent / "app" / "core" / "src"
+    files = [str(p) for p in (core / "main" / "java").rglob("*.java")]
+    files += [str(p) for p in (core / "test" / "java").rglob("GoldenCheck.java")]
+    assert len(files) > 1, "app/core sources missing"
     c = subprocess.run([javac, "-Xlint:all", "-d", str(tmp_path)] + files, capture_output=True, text=True, timeout=300)
     assert c.returncode == 0, c.stderr
-    r = subprocess.run([java, "-cp", str(tmp_path), "org.sanket.GoldenCheck", str(GOLDEN)],
+    r = subprocess.run([java, "-cp", str(tmp_path), "io.github.c0ldsheep.sanket.core.GoldenCheck", str(GOLDEN)],
                        capture_output=True, text=True, timeout=300)
     assert r.returncode == 0, r.stdout + r.stderr
     assert " 0 mismatches" in r.stdout

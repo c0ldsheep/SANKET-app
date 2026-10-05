@@ -64,7 +64,7 @@ The PRAYAS write-up (PDF, filled Word template and portal text) is built from `r
 
 `sanket/` research code (the detector is `core.py`, standard library only) · `experiments/` the pipeline ·
 `tests/` automated tests · `results/` metrics, tables, figures · `web/` dashboard and JavaScript port ·
-`android/` Java port and integration guide · `live/` phone tool · `submission/` PRAYAS write-up and builder.
+`android/` Android integration notes (the Java detector itself is in `../app/core`) · `live/` phone tool · `submission/` PRAYAS write-up and builder.
 
 ## Data and credits
 

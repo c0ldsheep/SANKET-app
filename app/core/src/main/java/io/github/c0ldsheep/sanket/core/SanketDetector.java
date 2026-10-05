@@ -1,7 +1,7 @@
-package org.sanket;
+package io.github.c0ldsheep.sanket.core;
 
 /**
- * SANKET streaming link-loss detector: a Java port of {@code sanket/core.py} (SanketDetector).
+ * SANKET streaming link-loss detector: a Java port of {@code research/sanket/core.py} (SanketDetector).
  *
  * <p>Pure Java with no Android dependencies, so the same class can be unit-tested on a laptop
  * and dropped into an Android app. Feed it one reading per tick (normally once per second):
@@ -10,7 +10,7 @@ package org.sanket;
  * {@link #step} returns {@code true}, prefetch the delivery manifest.
  *
  * <p>The arithmetic repeats the Python reference operation for operation;
- * {@link GoldenCheck} replays the Python golden vectors and requires identical alarms.
+ * {@code GoldenVectorsTest} replays the Python golden vectors and requires identical alarms.
  * Not thread-safe: use one instance per SIM / subscription from one thread.
  */
 public final class SanketDetector {
@@ -123,59 +123,6 @@ public final class SanketDetector {
         private static boolean sameQ(double a, double b) { return (Double.isNaN(a) && Double.isNaN(b)) || a == b; }
     }
 
-    /** Kalman filter with state [level, rate]; white-acceleration process noise q (dB^2/s^3). */
-    static final class LocalLinearTrend {
-        final double measVar, q, rate0Var, gate;
-        double level, rate, p00, p01, p11, t;
-        boolean hasT;
-        int n;
-
-        LocalLinearTrend(double measSd, double q, double rate0Sd, double gate) {
-            if (!(measSd > 0) || !(q > 0) || !(rate0Sd > 0)) throw new IllegalArgumentException("bad filter settings");
-            this.measVar = measSd * measSd; this.q = q; this.rate0Var = rate0Sd * rate0Sd; this.gate = gate;
-            reset();
-        }
-
-        void reset() { level = rate = p00 = p01 = p11 = 0.0; hasT = false; n = 0; }
-
-        boolean ready() { return n > 0; }
-
-        void init(double tt, double z) { level = z; rate = 0.0; p00 = measVar; p01 = 0.0; p11 = rate0Var; t = tt; hasT = true; n = 1; }
-
-        void predictTo(double tt) {
-            if (!hasT) return;
-            double dt = tt - t;
-            if (dt <= 0.0) return;
-            double a00 = p00, a01 = p01, a11 = p11;
-            level = level + rate * dt;
-            p00 = a00 + 2.0 * dt * a01 + dt * dt * a11 + q * dt * dt * dt / 3.0;
-            p01 = a01 + dt * a11 + q * dt * dt / 2.0;
-            p11 = a11 + q * dt;
-            t = tt;
-        }
-
-        void update(double tt, double z) {
-            if (n == 0) { init(tt, z); return; }
-            predictTo(tt);
-            double r = measVar;
-            double s = p00 + r;
-            double y = z - level;
-            if (gate > 0.0) {
-                double nis = y * y / s;
-                double g2 = gate * gate;
-                if (nis > g2) { r = r * nis / g2; s = p00 + r; }
-            }
-            double k0 = p00 / s, k1 = p01 / s;
-            double a00 = p00, a01 = p01, a11 = p11;
-            level = level + k0 * y;
-            rate = rate + k1 * y;
-            p11 = a11 - k1 * a01;
-            p01 = (1.0 - k0) * a01;
-            p00 = (1.0 - k0) * a00;
-            n += 1;
-        }
-    }
-
     // forecast(): returns {mean, sd}
     static double[] forecast(double level, double rate, double p00, double p01, double p11, double q, double h) {
         double mean = level + rate * h;
@@ -263,6 +210,33 @@ public final class SanketDetector {
             if (kn.level >= kf.level - p.nbrDelta && (kn.rate - kf.rate) >= p.nbrDiff) main = false;
         }
         return main;
+    }
+
+    /** Horizon of the risk forecast, in seconds. */
+    public double horizon() { return p.horizon; }
+
+    /** Chance that RSRP is at or below the loss level {@link #horizon()} seconds from now (for display). */
+    public double risk() {
+        if (!kf.ready()) return 0.0;
+        double[] f = forecast(kf.level, kf.rate, kf.p00, kf.p01, kf.p11, kf.q, p.horizon);
+        if (f[1] <= 0.0) return f[0] <= p.theta ? 1.0 : 0.0;
+        return normalCdf((p.theta - f[0]) / f[1]);
+    }
+
+    /** Seconds until the trend line reaches the loss level; infinite while the signal is not falling. */
+    public double timeToLoss() {
+        if (!kf.ready() || kf.rate >= 0.0) return Double.POSITIVE_INFINITY;
+        return Math.max(0.0, (kf.level - p.theta) / -kf.rate);
+    }
+
+    /** Standard normal CDF through the complementary error function (Numerical Recipes erfcc, error below 1.2e-7). */
+    static double normalCdf(double x) {
+        double z = Math.abs(x) / Math.sqrt(2.0);
+        double t = 1.0 / (1.0 + 0.5 * z);
+        double erfc = t * Math.exp(-z * z - 1.26551223 + t * (1.00002368 + t * (0.37409196 + t * (0.09678418
+                + t * (-0.18628806 + t * (0.27886807 + t * (-1.13520398 + t * (1.48851587
+                + t * (-0.82215223 + t * 0.17087277)))))))));
+        return x >= 0.0 ? 1.0 - 0.5 * erfc : 0.5 * erfc;
     }
 
     public int measurements() { return nMeas; }
