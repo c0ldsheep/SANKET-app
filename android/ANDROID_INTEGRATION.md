@@ -22,7 +22,7 @@ class LinkWatcher(private val tm: TelephonyManager, private val onPrefetch: () -
     private val detector = SanketDetector(SanketDetector.Params.tuned())
     @Volatile private var rsrp = Double.NaN
     @Volatile private var rsrq = Double.NaN
-    @Volatile private var nbr = Double.NaN
+    @Volatile private var nbr = Double.NaN   // best neighbour RSRP from a CellInfoListener (not shown); NaN turns the common-mode test off
     private val exec = Executors.newSingleThreadScheduledExecutor()
 
     private val callback = object : TelephonyCallback(), TelephonyCallback.SignalStrengthsListener {
@@ -48,7 +48,7 @@ class LinkWatcher(private val tm: TelephonyManager, private val onPrefetch: () -
 
 Run it inside the foreground service the app already uses for live location during an order, and stop it
 when no order is active. There is no polling of the radio and no extra wakelock. The detector costs about
-1.4 µs of CPU per reading (pure Python on a laptop); the Java version is lighter.
+1.4 µs of CPU per reading, measured in pure Python on a laptop (the Java port was not benchmarked).
 
 ## 3. What "prefetch" should do
 
