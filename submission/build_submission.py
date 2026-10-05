@@ -202,11 +202,9 @@ def content(M, team, n_tests, n_ticks):
         ("ul", [
             f"The 10 to 15 s target runs into physics on fast ramp entries. So we also asked how much warning the data really needs ({crit:.0f} s "
             f"for the critical part) and where earlier warning can come from (dead-zone memory).",
-            "Cleaning up stale, rounded phone readings mattered more than a complex model: the Kalman detector beat "
-            "logistic regression.",
-            "Most false alarms in real data came from handover zones and street shadows; comparing the serving cell "
-            "with a neighbour separates them from basement entries. Our simulator is calmer than real streets, so "
-            "false alarms must be measured on real recordings.",
+            "Handling stale, rounded readings mattered more than model complexity: Kalman beat logistic regression.",
+            "Most real false alarms came from handover zones and street shadows, which the neighbour check filters "
+            "out. False alarms must be measured on real recordings: our simulator is calmer than real streets.",
             "Limitations: basement entries are simulated, and the real recordings are from Irish 4G networks. Next: "
             "record real entries in Navi Mumbai on 4G and 5G, and run the detector in an Android app.",
         ]),
