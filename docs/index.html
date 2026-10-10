@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SANKET: know before the signal dies</title>
+<meta name="description" content="SANKET warns you seconds before your phone loses signal in lifts, basements and ramps, and keeps your downloads going through the drop. Free for Android.">
+<meta name="theme-color" content="#F3F0E8">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://c0ldsheep.github.io/SANKET-app/">
+<meta property="og:title" content="SANKET: know before the signal dies">
+<meta property="og:description" content="Your phone warns you before the signal goes, and your downloads carry on after it. Free for Android.">
+<meta property="og:image" content="https://c0ldsheep.github.io/SANKET-app/assets/img/og.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="assets/img/icon.svg" type="image/svg+xml">
+<link rel="preload" href="assets/fonts/instrument-serif-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="assets/fonts/geist-latin.woff2" as="font" type="font/woff2" crossorigin>
+<script>if (!matchMedia('(prefers-reduced-motion: reduce)').matches && 'WebGL2RenderingContext' in window) document.documentElement.classList.add('motion');</script>
+<link rel="stylesheet" href="assets/site.css">
+<script type="module" src="assets/site.js"></script>
+</head>
+<body>
+<a class="skip" href="#faq">Skip the story</a>
+
+<header class="nav">
+  <a class="brand" href="#top" aria-label="SANKET, back to the top">
+    <svg class="brand-mark" viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="15" width="4" height="7" rx="1"/><rect x="8" y="11" width="4" height="11" rx="1"/><rect x="14" y="7" width="4" height="15" rx="1"/><rect x="20" y="3" width="4" height="19" rx="1" opacity=".35"/></svg>
+    <span class="brand-name">SANKET</span><span class="brand-hi" lang="hi">संकेत</span>
+  </a>
+  <nav aria-label="Sections">
+    <a href="#how">How it works</a>
+    <a href="#privacy">Privacy</a>
+    <a href="#faq">Questions</a>
+  </nav>
+  <a class="btn btn-small" href="https://github.com/c0ldsheep/SANKET-app/releases/latest/download/SANKET.apk">Get the app</a>
+</header>
+
+<main id="top">
+  <section class="story" id="story" aria-label="What SANKET does, in eight scenes">
+    <div class="stage">
+      <canvas class="stage-canvas" aria-hidden="true"></canvas>
+      <div class="tags" aria-hidden="true">
+        <span class="tag tag-warn" data-tag="warn"><b>63 s</b> SANKET warns</span>
+        <span class="tag tag-gone" data-tag="gone"><b>79 s</b> Signal gone</span>
+      </div>
+
+      <article class="beat" data-scene="0" id="scene-1">
+        <img class="still" src="assets/img/scene-1.webp" alt="Four glass signal bars on paper. Three have sunk to clear stubs and the last one glows red: the signal is dying." width="1200" height="900" loading="lazy">
+        <div class="copy">
+          <p class="kicker"><span class="count">01 / 08</span>SANKET for Android</p>
+          <h1>The signal always dies at the worst moment.</h1>
+          <p class="lead">In the lift. In the basement. On the ramp down. SANKET warns you seconds before the signal goes, and keeps your downloads safe.</p>
+          <div class="actions">
+            <a class="btn" href="https://github.com/c0ldsheep/SANKET-app/releases/latest/download/SANKET.apk">Download for Android</a>
+            <a class="link" href="#how">See how it works</a>
+          </div>
+          <p class="fine">Free · Android 10 or newer · 267 KB · No account</p>
+        </div>
+      </article>
+      <article class="beat" data-scene="1" id="scene-2">
+        <img class="still" src="assets/img/scene-2.webp" alt="An old lift car in glass, with a folding scissor gate, a floor dial on its roof, and the cables and rails it climbs." width="1200" height="900" loading="lazy">
+        <div class="copy">
+          <p class="kicker"><span class="count">02 / 08</span>Where it happens</p>
+          <h2>Lifts. Basements. Ramps.</h2>
+          <p class="lead">Concrete swallows the signal in seconds. The map freezes, the order won't load, and your download starts again from zero.</p>
+        </div>
+      </article>
+      <article class="beat" data-scene="2" id="scene-3">
+        <img class="still" src="assets/img/scene-3.webp" alt="A glass delivery scooter with an orange delivery box, riding ahead and leaving a puff of smoke behind." width="1200" height="900" loading="lazy">
+        <div class="copy">
+          <p class="kicker"><span class="count">03 / 08</span>Who it's for</p>
+          <h2>Built for delivery riders first.</h2>
+          <p class="lead">Riders go underground dozens of times a day. SANKET began as our answer to PRAYAS problem COMP-26-S-020 at Terna Engineering College, guided by our mentor, Dr. Rohini Palve. It helps anyone with a lift and a deadline.</p>
+          <div class="actions">
+            <a class="btn" href="https://github.com/c0ldsheep/SANKET-app/releases/latest/download/SANKET.apk">Download for Android</a>
+          </div>
+        </div>
+      </article>
+      <article class="beat" data-scene="3" id="how">
+        <img class="still" src="assets/img/scene-4.webp" alt="A simulated ride from our study as a row of glass columns, one for every 8 seconds of signal. They stand tall and green for a minute, then fall through amber and orange to red. A slim amber post marks 63 seconds, where SANKET warned; after 79 seconds the columns are flat." width="1200" height="900" loading="lazy">
+        <div class="copy">
+          <p class="kicker"><span class="count">04 / 08</span>A test ride from our study</p>
+          <h2>SANKET sees the fall coming.</h2>
+          <p class="lead">It reads your signal every second. On this simulated ride down a basement ramp, it warned 16 seconds before the signal died. A simple low-signal alarm managed 2.</p>
+          <dl class="stats">
+            <div><dt>16 s</dt><dd>of warning on this ride</dd></div>
+            <div><dt>80%</dt><dd>of orders saved in our tests, against 46% for a simple alarm</dd></div>
+          </dl>
+        </div>
+      </article>
+      <article class="beat" data-scene="4" id="scene-5">
+        <img class="still" src="assets/img/scene-5.webp" alt="A glass phone standing on its edge. Its screen shows a download ring, paused in amber while the signal is gone, then green again." width="1200" height="900" loading="lazy">
+        <div class="copy">
+          <p class="kicker"><span class="count">05 / 08</span>Before the drop</p>
+          <h2>Your download is saved first.</h2>
+          <p class="lead">When the signal goes, it waits. When it's back, it carries on from the exact byte where it stopped. Nothing starts over.</p>
+        </div>
+      </article>
+      <article class="beat" data-scene="5" id="scene-6">
+        <img class="still" src="assets/img/scene-6.webp" alt="A red glass map pin standing on a folded glass map, with a ripple spreading from it." width="1200" height="900" loading="lazy">
+        <div class="copy">
+          <p class="kicker"><span class="count">06 / 08</span>After the drop</p>
+          <h2>No signal. Still on the map.</h2>
+          <p class="lead">What you needed is already on your phone. SANKET remembers the places where you lost signal, and acts before you reach them.</p>
+        </div>
+      </article>
+      <article class="beat" data-scene="6" id="privacy">
+        <img class="still" src="assets/img/scene-7.webp" alt="A green glass padlock with a glowing keyhole, its shackle shut." width="1200" height="900" loading="lazy">
+        <div class="copy">
+          <p class="kicker"><span class="count">07 / 08</span>Privacy</p>
+          <h2>It stays on your phone.</h2>
+          <p class="lead">No account. No server. No ads. Everything it learns is encrypted on your phone, and one tap deletes it all.</p>
+        </div>
+      </article>
+      <article class="beat" data-scene="7" id="scene-8">
+        <img class="still" src="assets/img/scene-8.webp" alt="Four glass signal bars, all full and green." width="1200" height="900" loading="lazy">
+        <div class="copy">
+          <p class="kicker"><span class="count">08 / 08</span>Get SANKET</p>
+          <h2>Lose the signal. Keep everything else.</h2>
+          <p class="lead">Free for Android 10 and newer. Open it and tap <strong>Try the demo</strong>: a test ride from our study replays on your phone, warning and all.</p>
+          <div class="actions">
+            <a class="btn" href="https://github.com/c0ldsheep/SANKET-app/releases/latest/download/SANKET.apk">Download SANKET, free</a>
+            <a class="link" href="https://github.com/c0ldsheep/SANKET-app">Download page on GitHub</a>
+          </div>
+          <figure class="qr qr-inline">
+            <img src="assets/img/qr.svg" alt="QR code that opens this page on your phone" width="104" height="104">
+            <figcaption>On a computer? Scan to open this page on your phone.</figcaption>
+          </figure>
+        </div>
+      </article>
+
+      <p class="scrollhint" aria-hidden="true"><span></span>Scroll</p>
+    </div>
+  </section>
+
+  <section class="faq" id="faq" aria-labelledby="faq-title">
+    <div class="wrap faq-wrap">
+      <div class="faq-head">
+        <p class="kicker">Questions</p>
+        <h2 id="faq-title">Before you install</h2>
+      </div>
+      <div class="faq-list">
+        <details><summary>Is SANKET free?</summary><p>Yes. No ads, no account, nothing to buy.</p></details>
+        <details><summary>Which phones does it work on?</summary><p>Android 10 and newer. There's no iPhone version yet.</p></details>
+        <details><summary>Why does Chrome say the file might be harmful?</summary><p>Chrome says this about every app downloaded outside the Play Store, and SANKET isn't on the Play Store yet. Tap <strong>Download anyway</strong>, then allow installs from Chrome when Android asks.</p></details>
+        <details><summary>Android says "There was a problem parsing the package".</summary><p>Delete the SANKET files in your Downloads, restart the phone, and download again. The file is 267 KB (some apps show 274 kB); any other size means the download broke.</p></details>
+        <details><summary>My phone has no barometer. Will it notice lifts?</summary><p>Yes. It feels a lift start and stop through the motion sensor, which every phone has: you are lighter for a moment going down, and heavier going up.</p></details>
+        <details><summary>Will it eat my mobile data?</summary><p>It only downloads what you ask for. Downloads of 100 MB or more wait for Wi-Fi unless you tap <strong>Use mobile data</strong>.</p></details>
+        <details><summary>Does it drain the battery?</summary><p>It reads the signal once a second, only while protection is on. In Battery Saver or below 15%, it turns off GPS and checks nearby towers less often.</p></details>
+        <details><summary>Does it work on Jio's 5G?</summary><p>Yes, as an early version. On 2G and 3G it still protects your downloads, but it can't warn early.</p></details>
+        <details><summary>What does it need permission for?</summary><p>Location, because Android shows nearby towers only with it. Phone, to read both SIM cards; it never makes or reads calls. Notifications, for the warning.</p></details>
+        <details><summary>Has it been tested in real buildings?</summary><p>Not yet. The warning was built and tested with 52 hours of real 4G recordings and 1,500 simulated trips, and the app on an Android emulator and a phone. Tests in real basements and lifts are next.</p></details>
+        <details><summary>Can delivery apps use it?</summary><p>That's where it's going. The warning is a small piece of code that can run inside a delivery partner app. Across a whole fleet, the places where riders lose signal can be shared: in our study's simulated fleet, that got 95% of basement entries warned at least 10 seconds ahead within a week.</p></details>
+      </div>
+    </div>
+  </section>
+
+  <section class="get" id="get" aria-labelledby="get-title">
+    <div class="wrap get-grid">
+      <div>
+        <h2 id="get-title">Next time the signal dies, you'll know first.</h2>
+        <div class="actions">
+          <a class="btn" href="https://github.com/c0ldsheep/SANKET-app/releases/latest/download/SANKET.apk">Download for Android</a>
+          <a class="link" href="https://github.com/c0ldsheep/SANKET-app">All versions, with sizes and checksums</a>
+        </div>
+        <p class="fine">Free for Android 10 and newer. 267 KB.</p>
+      </div>
+      <figure class="qr">
+        <img src="assets/img/qr.svg" alt="QR code that opens this page on your phone" width="132" height="132">
+        <figcaption>On a computer? Scan this to open the page on your phone.</figcaption>
+      </figure>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <div class="wrap foot-grid">
+    <p><span class="brand-name">SANKET</span> (<span lang="hi">संकेत</span>) means "signal". Made by Team Invicti at Terna Engineering College, Navi Mumbai, with our mentor, Dr. Rohini Palve.</p>
+    <p class="foot-links"><a href="https://github.com/c0ldsheep/SANKET-app">Download page</a><a href="https://github.com/c0ldsheep/SANKET-app/releases">All versions</a><a href="#privacy">Privacy</a></p>
+  </div>
+</footer>
+</body>
+</html>

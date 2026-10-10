@@ -1,0 +1,221 @@
+/* SANKET website. Tokens and rules: ../../DESIGN.md */
+@font-face { font-family: "Instrument Serif"; src: url(fonts/instrument-serif-latin.woff2) format("woff2"); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: "Geist"; src: url(fonts/geist-latin.woff2) format("woff2"); font-weight: 400 600; font-style: normal; font-display: swap; }
+@font-face { font-family: "Tiro Devanagari Hindi"; src: url(fonts/tiro-devanagari-sanket.woff2) format("woff2"); font-weight: 400; font-display: swap; unicode-range: U+0900-097F; }
+
+:root {
+  --paper: #f3f0e8;
+  --paper-2: #ebe6da;
+  --card: #fbfaf6;
+  --ink: #16181d;
+  --ink-2: #3c3e44;
+  --ink-3: #64666c;
+  --line: rgba(22, 24, 29, 0.13);
+  --line-2: rgba(22, 24, 29, 0.22);
+  /* Signal colours, only for signal states. The -ink versions are dark enough for small text on paper. */
+  --good: #1f9d57;
+  --watch: #e8a317;
+  --lost: #d93a2f;
+  --good-ink: #146c3c;
+  --watch-ink: #855600;
+  --lost-ink: #ab2b22;
+  --radius: 14px;
+  --ease-out: cubic-bezier(.23, 1, .32, 1);
+  --display: "Instrument Serif", "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+  --sans: "Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --hindi: "Tiro Devanagari Hindi", "Noto Serif Devanagari", serif;
+  --gutter: clamp(16px, 6vw, 96px);
+  color-scheme: light;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { background: var(--paper); scroll-padding-top: 76px; -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--paper); color: var(--ink); font: 400 17px/1.6 var(--sans); -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+img, svg { display: block; max-width: 100%; }
+a { color: inherit; }
+h1, h2 { font-family: var(--display); font-weight: 400; line-height: 1.0; letter-spacing: -0.012em; margin: 0; text-wrap: balance; }
+p { margin: 0; text-wrap: pretty; }
+[lang="hi"] { font-family: var(--hindi); }
+:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; border-radius: 6px; }
+::selection { background: rgba(31, 157, 87, 0.22); }
+
+.skip { position: absolute; left: 16px; top: -60px; z-index: 50; padding: 10px 14px; border-radius: var(--radius); background: var(--ink); color: var(--paper); text-decoration: none; }
+.skip:focus { top: 12px; }
+
+/* ---- nav ---- */
+.nav {
+  position: fixed; inset: 0 0 auto 0; z-index: 30;
+  display: flex; align-items: center; gap: 28px;
+  padding: calc(14px + env(safe-area-inset-top, 0px)) var(--gutter) 14px;
+  background: linear-gradient(to bottom, rgba(243, 240, 232, 0.92), rgba(243, 240, 232, 0.6) 70%, rgba(243, 240, 232, 0));
+}
+.brand { display: flex; align-items: center; gap: 10px; text-decoration: none; margin-right: auto; }
+.brand-mark { width: 22px; height: 22px; fill: var(--ink); }
+.brand-name { font-weight: 600; letter-spacing: 0.06em; font-size: 15px; }
+.brand-hi { color: var(--ink-3); font-size: 15px; transform: translateY(1px); }
+.nav nav { display: flex; gap: 22px; }
+.nav nav a { color: var(--ink-2); text-decoration: none; font-size: 15px; transition: color .2s; }
+@media (hover: hover) { .nav nav a:hover { color: var(--ink); } }
+
+/* ---- actions ---- */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  min-height: 48px; padding: 0 22px; border-radius: var(--radius);
+  background: var(--ink); color: var(--paper); text-decoration: none;
+  font-weight: 500; font-size: 16px; letter-spacing: 0.005em;
+  transition: transform .16s var(--ease-out), background-color .2s;
+}
+.btn:active { transform: scale(0.97); }
+@media (hover: hover) { .btn:hover { background: #2a2d34; } }
+.btn-small { min-height: 40px; padding: 0 16px; font-size: 14px; }
+.link { color: var(--ink); font-size: 16px; text-decoration: underline; text-decoration-color: var(--line-2); text-underline-offset: 4px; transition: text-decoration-color .2s; }
+@media (hover: hover) { .link:hover { text-decoration-color: var(--ink); } }
+.actions { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 24px; margin-top: 28px; }
+.fine { margin-top: 14px; color: var(--ink-3); font-size: 14px; font-variant-numeric: tabular-nums; }
+
+/* ---- the story ---- */
+.story { position: relative; }
+.stage { position: relative; }
+.stage-canvas { display: none; }
+.tags { display: none; }
+.scrollhint { display: none; }
+
+.kicker { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; color: var(--ink-3); font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; }
+.count { font-variant-numeric: tabular-nums; color: var(--ink); letter-spacing: 0.04em; }
+.count::after { content: ""; display: inline-block; width: 18px; height: 1px; margin: 0 0 4px 12px; background: var(--line-2); vertical-align: middle; }
+.beat h1 { font-size: clamp(2.7rem, 5.4vw, 5.1rem); }
+.beat h2 { font-size: clamp(2.3rem, 4.3vw, 4rem); }
+.lead { margin-top: 20px; color: var(--ink-2); font-size: clamp(1.02rem, 1.25vw, 1.15rem); line-height: 1.6; max-width: 34em; }
+.lead strong { color: var(--ink); font-weight: 600; }
+
+.stats { display: grid; grid-template-columns: auto 1fr; gap: 10px 18px; margin: 26px 0 0; align-items: baseline; max-width: 30em; }
+.stats div { display: contents; }
+.stats dt { font-family: var(--display); font-size: 2rem; line-height: 1; font-variant-numeric: tabular-nums; }
+.stats dd { margin: 0; color: var(--ink-2); font-size: 15px; line-height: 1.45; }
+
+.qr { margin: 0; display: flex; align-items: center; gap: 16px; }
+.qr img { background: var(--card); padding: 10px; border-radius: 10px; border: 1px solid var(--line); }
+.qr figcaption { color: var(--ink-3); font-size: 14px; line-height: 1.45; max-width: 15em; }
+.qr-inline { margin-top: 26px; }
+@media (pointer: coarse) { .qr { display: none; } }
+
+/* Still layout: no WebGL2, or reduced motion. Every scene is a picture with its words, one after another. */
+html:not(.motion) .story { padding-top: 76px; }
+html:not(.motion) .beat {
+  display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(24px, 5vw, 72px); align-items: center;
+  padding: clamp(40px, 7vw, 96px) var(--gutter);
+}
+html:not(.motion) .beat + .beat { border-top: 1px solid var(--line); }
+html:not(.motion) .beat .still {
+  order: 2; width: 100%; height: auto;
+  /* The paper in the picture fades into the page's paper instead of ending in a hard edge. */
+  -webkit-mask-image: radial-gradient(ellipse 50% 50% at 50% 50%, #000 62%, transparent 100%);
+  mask-image: radial-gradient(ellipse 50% 50% at 50% 50%, #000 62%, transparent 100%);
+}
+
+/* Motion layout: the glass stays in place while the scenes change around it. One screen of scrolling per scene. */
+html.motion .story { height: 900svh; }
+html.motion .stage { position: sticky; top: 0; height: 100svh; overflow: hidden; }
+/* The canvas is see-through where it draws nothing, so it never flashes in: the glass pours itself in. */
+html.motion .stage-canvas { display: block; position: absolute; inset: 0; width: 100%; height: 100%; touch-action: pan-y; }
+html.motion .beat { position: absolute; inset: 0; pointer-events: none; }
+html.motion .beat .still { display: none; }
+html.motion .beat .copy {
+  position: absolute; left: var(--gutter); top: 50%; width: min(31rem, 40vw);
+  opacity: 0; transform: translateY(calc(-50% + 14px));
+  transition: opacity .5s var(--ease-out), transform .6s var(--ease-out), visibility 0s linear .6s;
+  visibility: hidden;
+}
+html.motion .beat.on .copy { opacity: 1; transform: translateY(-50%); pointer-events: auto; visibility: visible; transition: opacity .5s var(--ease-out), transform .6s var(--ease-out), visibility 0s; }
+
+html.motion .tags { display: block; position: absolute; inset: 0; pointer-events: none; }
+.tag {
+  position: absolute; left: 0; top: 0; display: inline-flex; align-items: center; gap: 8px;
+  padding: 6px 11px 6px 9px; border-radius: 999px; background: var(--card); border: 1px solid var(--line);
+  font-size: 13px; color: var(--ink-2); white-space: nowrap; opacity: 0; transition: opacity .4s var(--ease-out);
+  box-shadow: 0 1px 2px rgba(22, 24, 29, 0.06);
+}
+.tag b { font-weight: 600; color: var(--ink); font-variant-numeric: tabular-nums; }
+.tag::before { content: ""; width: 8px; height: 8px; border-radius: 50%; }
+.tag-warn::before { background: var(--watch); }
+.tag-gone::before { background: var(--lost); }
+.tag.on { opacity: 1; }
+
+html.motion .scrollhint {
+  display: flex; position: absolute; left: 50%; bottom: max(22px, env(safe-area-inset-bottom, 0px)); transform: translateX(-50%);
+  align-items: center; gap: 10px; margin: 0; color: var(--ink-3); font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase;
+  transition: opacity .4s var(--ease-out);
+}
+.scrollhint span { width: 1px; height: 28px; background: linear-gradient(to bottom, var(--ink-3), transparent); animation: drip 1.8s var(--ease-out) infinite; transform-origin: top; }
+@keyframes drip { 0% { transform: scaleY(0); } 60% { transform: scaleY(1); opacity: 1; } 100% { transform: scaleY(1); opacity: 0; } }
+.scrollhint.gone { opacity: 0; }
+
+/* ---- questions ---- */
+.wrap { padding: 0 var(--gutter); max-width: 1320px; margin: 0 auto; }
+.faq { padding: clamp(72px, 10vw, 140px) 0; border-top: 1px solid var(--line); }
+.faq-wrap { display: grid; grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr); gap: clamp(28px, 6vw, 96px); }
+.faq-head h2 { font-size: clamp(2.3rem, 4vw, 3.6rem); }
+.faq-list { border-top: 1px solid var(--line); }
+.faq details { border-bottom: 1px solid var(--line); }
+.faq summary {
+  list-style: none; cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 20px;
+  padding: 20px 0; font-size: 17px; font-weight: 500;
+}
+.faq summary::-webkit-details-marker { display: none; }
+.faq summary::after { content: "+"; flex: none; width: 28px; height: 28px; display: grid; place-items: center; border: 1px solid var(--line-2); border-radius: 50%; font-size: 18px; color: var(--ink-2); transition: transform .25s var(--ease-out); }
+.faq details[open] summary::after { transform: rotate(45deg); }
+.faq details p { padding: 0 48px 22px 0; color: var(--ink-2); }
+
+/* ---- the last call ---- */
+.get { padding: clamp(64px, 9vw, 128px) 0; background: var(--paper-2); }
+.get-grid { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 40px; }
+.get h2 { font-size: clamp(2.3rem, 4.4vw, 4rem); max-width: 14em; }
+
+.foot { padding: 36px 0 calc(36px + env(safe-area-inset-bottom, 0px)); color: var(--ink-3); font-size: 14px; }
+.foot-grid { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 16px 32px; }
+.foot .brand-name { font-size: 14px; color: var(--ink); }
+.foot-links { display: flex; gap: 22px; }
+.foot-links a { text-decoration: none; }
+@media (hover: hover) { .foot-links a:hover { color: var(--ink); } }
+
+/* ---- tablets and phones ---- */
+@media (max-width: 900px) {
+  .nav nav { display: none; }
+  .faq-wrap { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 760px), (max-aspect-ratio: 4/5) {
+  body { font-size: 16px; }
+  .brand-hi { display: none; }
+  html.motion .story { height: 860svh; }
+  html.motion .beat .copy {
+    left: 16px; right: 16px; top: auto; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); width: auto;
+    transform: translateY(14px); padding-top: 56px;
+    background: linear-gradient(to bottom, rgba(243, 240, 232, 0), var(--paper) 46px);
+  }
+  html.motion .beat.on .copy { transform: none; }
+  .beat h1 { font-size: clamp(2.35rem, 10.5vw, 3.1rem); }
+  .beat h2 { font-size: clamp(2.1rem, 9vw, 2.7rem); }
+  .lead { margin-top: 14px; font-size: 1rem; line-height: 1.55; }
+  .kicker { margin-bottom: 12px; font-size: 12px; }
+  .actions { margin-top: 20px; gap: 12px 20px; }
+  .stats { margin-top: 18px; gap: 6px 14px; }
+  .stats dt { font-size: 1.6rem; }
+  .stats dd { font-size: 14px; }
+  html.motion .scrollhint { display: none; }
+  html:not(.motion) .beat { grid-template-columns: minmax(0, 1fr); }
+  html:not(.motion) .beat .still { order: 0; }
+}
+@media (max-width: 760px) and (max-height: 700px) {
+  html.motion .beat .lead { display: none; }
+}
+
+/* Fingers need 44px: text links and the small button grow taller on touch screens without moving anything. */
+@media (pointer: coarse), (max-width: 760px) {
+  .brand, .btn-small { min-height: 44px; }
+  .link { display: inline-block; padding: 9px 0; margin: -9px 0; }
+  .foot-links a { display: inline-block; padding: 11px 0; margin: -11px 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition-duration: 0.01ms !important; animation: none !important; }
+}

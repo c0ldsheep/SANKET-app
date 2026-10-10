@@ -33,10 +33,12 @@ installer got stuck.
 - A test build, signed with our development key. It passes 51 automated tests and was checked on an Android 13
   emulator. The field test in real basements and lifts is next.
 - Your data stays on the phone, encrypted: no account, no server, no analytics.
-- Try the demo: it replays a real ride into a basement and protects a sample download while the signal dies.
+- Try the demo: it replays a simulated ride into a basement from our study and protects a sample download while
+  the signal dies.
 - New in 0.3.0: lifts are noticed on phones without a barometer, and downloads of 100 MB or more ask before
   using mobile data.
 - SHA-256 of the APK: `ab52cf545d07569bdd612bd962d150da1ef471e141bbd4e689188b8475431297`
 
-SANKET is our answer to PRAYAS problem PRAYAS-COMP-26-S-020 at Terna Engineering College. The source code and the
-study will be published with our submission. Team Invicti.
+SANKET is our answer to PRAYAS problem PRAYAS-COMP-26-S-020 at Terna Engineering College, made by Team Invicti with
+our mentor, Dr. Rohini Palve. Website: https://c0ldsheep.github.io/SANKET-app/. The source code and the study will
+be published with our submission.
