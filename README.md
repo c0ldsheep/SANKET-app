@@ -11,8 +11,9 @@ PRAYAS problem PRAYAS-COMP-26-S-020 at Terna Engineering College (mentor: Dr. Ro
 
 **Every feature, the situation it helps in and its status: [FEATURES.md](FEATURES.md).** The test build of the app
 is on its public [download page](https://github.com/c0ldsheep/SANKET-app), which needs no GitHub account, and the
-app's website is live at https://c0ldsheep.github.io/SANKET-app/. How SANKET could go from this test app to delivery
-platforms, roadblocks included: [ROADMAP.md](ROADMAP.md).
+app's website is live at https://c0ldsheep.github.io/SANKET-app/. The dashboard is online too:
+https://c0ldsheep.github.io/SANKET-app/dashboard/. How SANKET could go from this test app to delivery platforms,
+roadblocks included: [ROADMAP.md](ROADMAP.md).
 
 ## What the study found (unseen test data)
 
@@ -41,4 +42,5 @@ UCC 4G LTE dataset: D. Raca, J. J. Quinlan, A. H. Zahran, C. J. Sreenan, ACM MMS
 Building-entry losses: arXiv:2605.23483. Throughput model: 3GPP TR 36.942. AI assistance: Claude (Anthropic) and
 Gemini, as stated in our PRAYAS submission.
 
-Team Invicti: Durva Gosavi and Sahil Waradkar, Computer Engineering, Terna Engineering College.
+Made by Team Invicti (Computer Engineering, Terna Engineering College, Navi Mumbai) with our mentor, Dr. Rohini
+Palve.
