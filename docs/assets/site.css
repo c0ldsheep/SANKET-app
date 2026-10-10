@@ -174,7 +174,7 @@ html.motion .scrollhint {
 .foot { padding: 36px 0 calc(36px + env(safe-area-inset-bottom, 0px)); color: var(--ink-3); font-size: 14px; }
 .foot-grid { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 16px 32px; }
 .foot .brand-name { font-size: 14px; color: var(--ink); }
-.foot-links { display: flex; gap: 22px; }
+.foot-links { display: flex; flex-wrap: wrap; gap: 10px 22px; }
 .foot-links a { text-decoration: none; }
 @media (hover: hover) { .foot-links a:hover { color: var(--ink); } }
 
