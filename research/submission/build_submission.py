@@ -52,6 +52,7 @@ def test_count() -> int:
 
 
 APP_PAGE = "https://github.com/c0ldsheep/SANKET-app"
+WEBSITE = "https://c0ldsheep.github.io/SANKET-app/"
 
 
 def app_facts():
@@ -172,7 +173,7 @@ def content(M, team, n_tests, n_ticks):
                                                   "phone.", 5.0),
         ("fig", FIG / "fig1_anatomy.png", "Fig. 2. A test trip the detector had never seen: a scooter goes down a "
                                           "basement ramp. SANKET warns 16 s before the link is lost, a static "
-                                          "threshold only 2 s before.", 4.5),
+                                          "threshold only 2 s before.", 4.3),
     ]))
     S.append(("Results & Observations", [
         ("ul", [
@@ -207,7 +208,7 @@ def content(M, team, n_tests, n_ticks):
             f"{first_day_ok} (Fig. 6).",
         ]),
         ("fig", FIG / "fig3_tradeoff.png", "Fig. 4. Detection against false alarms on unseen data. The large markers "
-                                           "are the settings chosen on calibration data.", 3.4),
+                                           "are the settings chosen on calibration data.", 3.2),
         ("figrow", [(FIG / "fig5_prefetch_small.png", 2.8), (FIG / "fig6_fleet_small.png", 2.8)],
          "Fig. 5 (left): downloads finished before the loss, by warning time. Fig. 6 (right): dead-zone memory over "
          "7 days."),
@@ -221,13 +222,17 @@ def content(M, team, n_tests, n_ticks):
             "out. False alarms must be measured on real recordings: our simulator is calmer than real streets.",
             "Limitations: basement entries are simulated, and the real recordings are from Irish 4G networks. Next: "
             "record real entries in Navi Mumbai on 4G and 5G with the app, to confirm these results in the field.",
+            "Our mentor, Dr. Rohini Palve, asked whether SANKET works in real life and how Swiggy or Zomato could use it, and suggested we put it online and start marketing it. Our roadmap answers this (section 9).",
         ]),
     ]))
     code, dash = team.get("code_link"), team.get("dashboard_link")
-    links = [f"Code, results and dashboard: {code}"] if code else [
-        "Interactive dashboard: web/SANKET_dashboard.html in the project folder (opens offline in any browser)"]
+    links = [f"Website: {WEBSITE}"]
     if dash:
         links.append(f"Live dashboard: {dash}")
+    if code:
+        links.append(f"Code, results and our roadmap (ROADMAP.md): {code}")
+    else:
+        links.append("Interactive dashboard: web/SANKET_dashboard.html in the project folder (opens offline)")
     links.append(f"Android app, free test build: {APP_PAGE}")
     if team.get("youtube_link"):
         links.append(f"Demo video: {team['youtube_link']}")
@@ -535,7 +540,7 @@ def portal_boxes(M, team, n_tests, n_ticks):
         f"{app_v}, {app_tests} automated tests), which saves downloads before a drop, resumes them afterwards and "
         f"includes a demo that replays the test trip; anyone can install it from {APP_PAGE}. A phone tool built on "
         f"Termux logs live 4G readings, and an interactive dashboard replays the test scenarios with adjustable "
-        f"settings.\n\n"
+        f"settings. Our website, {WEBSITE}, explains SANKET to riders and hosts the dashboard.\n\n"
         "The attached PDF has the evidence: a dashboard screenshot (Fig. 1), a sample run (Fig. 2), the signal measurements (Fig. 3), the comparison of "
         "all five detectors (table and Fig. 4), the download timing (Fig. 5) and the dead-zone memory results "
         "(Fig. 6).")
@@ -564,7 +569,13 @@ def portal_boxes(M, team, n_tests, n_ticks):
         "streets.\n\n"
         "Our main limitation is that the basement entries are simulated and the real recordings come from Ireland. "
         "Next, we want to record real basement entries in Navi Mumbai with our phone tool and the app, to confirm "
-        "these results in the field.")
+        "these results in the field.\n\n"
+        "Our mentor, Dr. Rohini Palve, asked whether SANKET works in real life and how delivery platforms such as "
+        "Swiggy or Zomato could use it, and suggested we put it all online and start marketing it. That shaped our "
+        "plan: first record real basement and lift entries in Navi Mumbai, then run a pilot with a small fleet of "
+        "riders, then offer SANKET as a small library inside delivery partner apps, where a dead-zone map shared by "
+        "a whole fleet gives the earliest warnings. Our roadmap lists what each step needs and the roadblocks we "
+        "expect, from phone makers closing background apps to India's data protection law.")
     for k, limit in PORTAL_LIMITS.items():
         if len(box[k]) > limit:
             raise SystemExit(f"portal box {k} is {len(box[k])} characters, over the {limit} limit")
@@ -603,7 +614,8 @@ def build_text(M, team, sections, date_text, path, n_tests, n_ticks):
         out += ["", f"----- Box {k}. {title}  ({len(box[k])} of {PORTAL_LIMITS[k]} characters) -----", box[k],
                 "----- end -----"]
     yt = team.get("youtube_link") or ""
-    other = [x for x in (team.get("code_link"), team.get("dashboard_link"), APP_PAGE) if x]
+    code = team.get("code_link")
+    other = [x for x in (WEBSITE, team.get("dashboard_link"), code, code and f"{code}/blob/main/ROADMAP.md", APP_PAGE) if x]
     out += ["", "----- Box 10. YouTube link (optional) -----", yt or "(leave empty if you have no video)",
             "----- end -----", "", "----- Box 10. Other resource links, one per line (optional) -----",
             "\n".join(other) or "(leave empty)", "----- end -----", "",
