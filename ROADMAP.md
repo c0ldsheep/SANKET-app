@@ -12,9 +12,9 @@ needs, and the roadblocks we expect.
   loss in 43.8% of basement entries, against 10.2% for a static threshold, at 1.76 false alarms per hour on real
   rides. In a simulated fleet that shares the places where riders lose signal, 95% of entries were warned at least
   10 seconds ahead by day 7.
-- **The app**: SANKET 0.3.0 for Android 10 and newer runs the same detector on the phone's real signal. It saves
-  downloads before the drop and resumes them after, remembers where signal was lost, and notices lifts. It has
-  been checked on an Android emulator and a phone. Website: https://c0ldsheep.github.io/SANKET-app/
+- **The app**: SANKET 0.4.0 for Android 10 and newer runs the same detector on the phone's real signal. It saves
+  downloads before the drop and resumes them after, remembers where signal was lost, notices lifts, and records
+  test rides for the field test. It has been checked on an Android emulator and a phone. Website: https://c0ldsheep.github.io/SANKET-app/
 - **Not done yet**: tests in real buildings. The basement entries in our study are simulated, and the real
   recordings come from 4G networks in Ireland.
 
@@ -33,8 +33,8 @@ is paid by the delivery.
   Airtel and Vi, on 4G and 5G.
 - Measure what a platform cares about: seconds of warning before the loss, false alarms per hour, how much of the
   order was saved, and the battery and data used in a shift.
-- Needs: two or three Android phones on different networks, a ride log in the app, and permission from building
-  managers.
+- Needs: two or three Android phones on different networks, the app's test rides (in 0.4.0), and permission from
+  building managers.
 - Done when: the results of 50 or more real entries are published, good or bad.
 
 ### Step 2. A pilot with a small fleet (December 2026 to February 2027)
