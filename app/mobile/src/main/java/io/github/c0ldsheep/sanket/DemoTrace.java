@@ -14,7 +14,7 @@ import java.util.List;
  * same pipeline as live readings so the app can be shown anywhere. The screen labels it as a demo.
  */
 final class DemoTrace {
-    /** The demo's sample download: an offline map kept on the project's public download page. */
+    /** The demo's sample download: an offline map kept in the project's releases (the "demo" release). */
     static final String FILE_URL = "https://github.com/c0ldsheep/SANKET-app/releases/download/demo/SANKET-demo-map.png";
 
     static final class Row {
