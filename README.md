@@ -11,7 +11,8 @@ PRAYAS problem PRAYAS-COMP-26-S-020 at Terna Engineering College (mentor: Dr. Ro
 
 **Every feature, the situation it helps in and its status: [FEATURES.md](FEATURES.md).** The test build of the app
 is on its public [download page](https://github.com/c0ldsheep/SANKET-app), which needs no GitHub account, and the
-app's website is live at https://c0ldsheep.github.io/SANKET-app/.
+app's website is live at https://c0ldsheep.github.io/SANKET-app/. How SANKET could go from this test app to delivery
+platforms, roadblocks included: [ROADMAP.md](ROADMAP.md).
 
 ## What the study found (unseen test data)
 
