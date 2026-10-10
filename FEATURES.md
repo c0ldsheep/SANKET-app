@@ -331,7 +331,7 @@ On 5 October we listed 31 bugs, gaps and ideas after reading the app's code. Ver
    `research/live`, to confirm features 9, 14, 15 and 25 and tune their thresholds.
 2. **Fleet server:** shared places and notes, the dispatch notice and safety alerts, with Play Integrity checks.
 3. **Hindi and Marathi** screens.
-4. **Website:** a one-page site where one piece of liquid glass, always moving, becomes each scene's object as you
-   scroll (bars → string → old lift that climbs → scooter that rides off leaving smoke → the real ride → phone →
-   pin → padlock → full bars). Sharp at the screen's full resolution. Preview only; it goes live after review.
-   Then a Play Store release.
+4. **Website (done):** live at https://c0ldsheep.github.io/SANKET-app/ since 10 October 2026, after our mentor's
+   review. One piece of liquid glass, always moving, becomes each scene's object as you scroll (bars → string → old
+   lift that climbs → scooter that rides off leaving smoke → the study's test ride → phone → pin → padlock → full
+   bars), sharp at the screen's full resolution. Next: a Play Store release.
