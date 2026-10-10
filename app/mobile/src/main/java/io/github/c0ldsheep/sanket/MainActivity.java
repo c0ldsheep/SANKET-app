@@ -8,6 +8,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.NotificationManager;
 import android.content.ActivityNotFoundException;
+import android.content.ClipData;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
@@ -42,7 +43,15 @@ import io.github.c0ldsheep.sanket.core.SanketDetector;
 import io.github.c0ldsheep.sanket.core.SignalWords;
 import io.github.c0ldsheep.sanket.core.VerticalMotion;
 import io.github.c0ldsheep.sanket.core.ZoneMemory;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -60,6 +69,7 @@ public final class MainActivity extends Activity {
     private static final String PREF_ASKED = "asked_";
     private static final String PREF_BATTERY_LATER = "battery_banner_later";
     private static final String STATE_PENDING_LINK = "pending_link";
+    private static final String WEBSITE = "https://c0ldsheep.github.io/SANKET-app/";
     private static final long REFRESH_MS = 500L;
     private static final long BANNERS_EVERY_MS = 2_000L;
     private static final long BATTERY_LATER_MS = 7L * 24L * 60L * 60L * 1000L;
@@ -104,6 +114,7 @@ public final class MainActivity extends Activity {
     private InfoRow lowPowerRow;
     private InfoRow dispatchRow;
     private MenuRow placesRow;
+    private MenuRow recordRow;
     private GradientDrawable cardBg;
     private GradientDrawable dotBg;
     private int shownColor;
@@ -162,8 +173,11 @@ public final class MainActivity extends Activity {
         new MenuRow(R.drawable.ic_log, R.string.safety_log, R.string.safety_log_sub, this::showLog);
         new MenuRow(R.drawable.ic_play, R.string.demo, R.string.demo_sub,
                 () -> GuardService.send(this, GuardService.ACTION_DEMO));
+        recordRow = new MenuRow(R.drawable.ic_record, R.string.record, R.string.record_sub, this::onRecordClicked);
         new MenuRow(R.drawable.ic_battery, R.string.keep_running, R.string.keep_running_sub, this::showKeepRunning);
         new MenuRow(R.drawable.ic_shield, R.string.privacy, R.string.privacy_sub, this::showPrivacy);
+        new MenuRow(R.drawable.ic_info, R.string.about, R.string.about_sub, this::showAbout);
+        ShareProvider.clean(this);
 
         protect.setOnClickListener(v -> onProtectClicked());
         findViewById(R.id.addDownload).setOnClickListener(v -> withConsent(() -> showLinkDialog(null, null)));
@@ -359,6 +373,7 @@ public final class MainActivity extends Activity {
         renderSignal(s);
         int places = engine.places().size();
         placesRow.badge(places > 0 ? String.valueOf(places) : "");
+        recordRow.badge(recordBadge());
         long now = SystemClock.uptimeMillis();
         if (now - bannersAt >= BANNERS_EVERY_MS) {
             bannersAt = now;
@@ -820,6 +835,156 @@ public final class MainActivity extends Activity {
                     startActivity(Intent.createChooser(send, getString(R.string.share)));
                 })
                 .setNegativeButton(R.string.cancel, null)
+                .show();
+    }
+
+    // ---- Test ride (a field test recording) ----
+
+    private String recordBadge() {
+        switch (engine.ride()) {
+            case RECORDING: return rideLive() ? getString(R.string.record_badge, clock(engine.rideSeconds()))
+                    : getString(R.string.record_paused_badge);
+            case SAVED: return getString(R.string.record_saved_badge);
+            default: return "";
+        }
+    }
+
+    /** A test ride records only while protection reads the real signal (not during the demo). */
+    private boolean rideLive() {
+        Snapshot s = engine.snapshot();
+        return s.running && !s.demo;
+    }
+
+    private static String clock(long seconds) {
+        return String.format(Locale.ROOT, "%d:%02d", seconds / 60L, seconds % 60L);
+    }
+
+    private void onRecordClicked() {
+        switch (engine.ride()) {
+            case RECORDING:
+                if (!rideLive()) {
+                    new AlertDialog.Builder(this)
+                            .setTitle(R.string.record_paused_title)
+                            .setMessage(R.string.record_paused_text)
+                            .setPositiveButton(R.string.record_stop, (d, w) -> {
+                                engine.stopRide();
+                                render();
+                                showSavedRide();
+                            })
+                            .setNegativeButton(R.string.record_keep, null)
+                            .show();
+                    return;
+                }
+                new AlertDialog.Builder(this)
+                        .setTitle(getString(R.string.record_now_title, clock(engine.rideSeconds())))
+                        .setMessage(R.string.record_now_text)
+                        .setPositiveButton(R.string.record_stop, (d, w) -> {
+                            engine.stopRide();
+                            render();
+                            showSavedRide();
+                        })
+                        .setNeutralButton(R.string.record_mark, (d, w) -> {
+                            engine.markRide();
+                            Toast.makeText(this, R.string.record_marked, Toast.LENGTH_SHORT).show();
+                        })
+                        .setNegativeButton(R.string.record_keep, null)
+                        .show();
+                return;
+            case SAVED:
+                showSavedRide();
+                return;
+            default:
+                break;
+        }
+        Snapshot s = engine.snapshot();
+        if (s.demo) {
+            new AlertDialog.Builder(this)
+                    .setTitle(R.string.record)
+                    .setMessage(R.string.record_not_in_demo)
+                    .setPositiveButton(R.string.close, null)
+                    .show();
+        } else if (!s.running) {
+            new AlertDialog.Builder(this)
+                    .setTitle(R.string.record)
+                    .setMessage(R.string.record_need_protection)
+                    .setPositiveButton(R.string.record_turn_on, (d, w) -> onProtectClicked())
+                    .setNegativeButton(R.string.cancel, null)
+                    .show();
+        } else {
+            new AlertDialog.Builder(this)
+                    .setTitle(R.string.record)
+                    .setMessage(R.string.record_intro)
+                    .setPositiveButton(R.string.record_start, (d, w) -> {
+                        engine.startRide();
+                        render();
+                    })
+                    .setNegativeButton(R.string.cancel, null)
+                    .show();
+        }
+    }
+
+    private void showSavedRide() {
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.record_saved_title)
+                .setMessage(getString(R.string.record_saved_text, clock(engine.rideRows())))
+                .setPositiveButton(R.string.share, (d, w) -> confirmShareRide())
+                .setNeutralButton(R.string.record_delete, (d, w) -> confirmDeleteRide())
+                .setNegativeButton(R.string.close, null)
+                .show();
+    }
+
+    private void confirmShareRide() {
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.record_share_title)
+                .setMessage(R.string.record_share_text)
+                .setPositiveButton(R.string.share, (d, w) -> shareRide())
+                .setNegativeButton(R.string.cancel, null)
+                .show();
+    }
+
+    private void shareRide() {
+        String name = "SANKET-test-ride-"
+                + new SimpleDateFormat("yyyyMMdd-HHmm", Locale.ROOT).format(new Date(engine.rideStartMs())) + ".csv";
+        File out = new File(ShareProvider.dir(this), name);
+        try (Writer w = new OutputStreamWriter(new FileOutputStream(out), StandardCharsets.UTF_8)) {
+            w.write(engine.rideCsv());
+        } catch (IOException e) {
+            Toast.makeText(this, R.string.record_share_failed, Toast.LENGTH_LONG).show();
+            return;
+        }
+        Uri uri = ShareProvider.uri(out);
+        Intent send = new Intent(Intent.ACTION_SEND).setType("text/csv")
+                .putExtra(Intent.EXTRA_STREAM, uri)
+                .putExtra(Intent.EXTRA_SUBJECT, name)
+                .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        send.setClipData(ClipData.newRawUri(name, uri));
+        startActivity(Intent.createChooser(send, getString(R.string.share)));
+    }
+
+    private void confirmDeleteRide() {
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.record_delete_title)
+                .setMessage(R.string.record_delete_text)
+                .setPositiveButton(R.string.record_delete, (d, w) -> {
+                    engine.deleteRide();
+                    render();
+                })
+                .setNegativeButton(R.string.cancel, null)
+                .show();
+    }
+
+    private void showAbout() {
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.about)
+                .setMessage(getString(R.string.about_text, versionName()))
+                .setPositiveButton(R.string.about_website, (d, w) -> {
+                    try {
+                        startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(WEBSITE)));
+                    } catch (ActivityNotFoundException e) {
+                        Toast.makeText(this, WEBSITE, Toast.LENGTH_LONG).show();
+                    }
+                })
+                .setNegativeButton(R.string.close, null)
                 .show();
     }
 

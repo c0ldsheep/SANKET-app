@@ -34,7 +34,7 @@
     <string name="stop_demo">Stop the demo</string>
     <string name="protect_hint_off">Uses location and motion sensors only while it runs.</string>
     <string name="protect_hint_on">Runs in the background, so you can close the app.</string>
-    <string name="protect_hint_demo">A recorded ride is playing, with a sample map download. Protection carries on after it.</string>
+    <string name="protect_hint_demo">A test ride from our study is playing, with a sample map download. Protection carries on after it.</string>
     <string name="protect_hint_downloads">Watching the signal while your downloads run. Turn on protection to keep watching after they finish.</string>
 
     <!-- Things to fix -->
@@ -105,7 +105,7 @@
     <string name="section_signal">Your signal</string>
     <string name="sim_mobile_data">%s, mobile data</string>
     <string name="sim_unknown">SIM</string>
-    <string name="demo_sim">Recorded ride</string>
+    <string name="demo_sim">Test ride</string>
     <string name="tech_4g">4G</string>
     <string name="tech_5g">5G</string>
     <string name="tech_4g_5g">4G and 5G</string>
@@ -168,7 +168,7 @@
     <string name="safety_log">Safety log</string>
     <string name="safety_log_sub">Every signal loss, with the time and place</string>
     <string name="demo">Try the demo</string>
-    <string name="demo_sub">A real ramp ride, replayed, with a sample download</string>
+    <string name="demo_sub">A test ride from our study, replayed, with a sample download</string>
     <string name="keep_running">Keep SANKET running</string>
     <string name="keep_running_sub">Battery settings for your phone</string>
     <string name="privacy">Privacy</string>
@@ -178,7 +178,7 @@
     <string name="got_it">Got it</string>
     <string name="how_text" formatted="false">1. SANKET reads your signal every second and works out how fast it is falling.\n\n2. When the chance of losing signal in the next 10 seconds passes 70%, it saves your downloads at once.\n\n3. If a nearby tower stays strong, it\'s only a handover, so SANKET stays quiet.\n\n4. It remembers places where you lost signal before, and notices lifts with the barometer (or the motion sensor, on phones without one), so it can act even earlier.\n\nWhen the signal comes back, downloads continue from where they stopped.</string>
     <string name="consent_title">Before you start</string>
-    <string name="consent_text">SANKET watches your phone\'s signal so it can save your downloads before the signal drops.\n\nWhat it reads: the signal of each SIM, whether the internet works, air pressure or the phone\'s movement (to notice lifts) and your location while protection runs.\n\nWhere it goes: nowhere. Everything stays on this phone, encrypted.\n\nWhat it keeps: places where you lost signal, rounded to about 11 m, and a safety log for 30 days.\n\nAndroid will ask about phone calls. SANKET only uses that permission to see your SIM cards; it never makes, reads or records calls.\n\nYou can delete everything at any time under Privacy.</string>
+    <string name="consent_text">SANKET watches your phone\'s signal so it can save your downloads before the signal drops.\n\nWhat it reads: the signal of each SIM, whether the internet works, air pressure or the phone\'s movement (to notice lifts) and your location while protection runs.\n\nWhere it goes: nowhere. Everything stays on this phone, encrypted.\n\nWhat it keeps: places where you lost signal, rounded to about 11 m, and a safety log for 30 days. A test ride you record stays here until you share or delete it.\n\nAndroid will ask about phone calls. SANKET only uses that permission to see your SIM cards; it never makes, reads or records calls.\n\nYou can delete everything at any time under Privacy.</string>
     <string name="consent_agree">Agree and start</string>
     <string name="places_empty">No places yet. SANKET remembers a place after it loses signal there on two separate visits.</string>
     <string name="place_row">%1$s, %2$s\nLost signal on %3$d%% of visits, %4$s.%5$s</string>
@@ -192,7 +192,7 @@
     <string name="log_empty">Nothing logged yet. Signal losses longer than 10 seconds appear here, with the time and place. The demo is not logged.</string>
     <string name="log_share_title">Share the safety log?</string>
     <string name="log_share_text">It lists the times and rounded places where your phone lost signal. Share it only with people you trust.</string>
-    <string name="privacy_text">SANKET watches your phone\'s signal so it can save your downloads before the signal drops.\n\nWhat it reads: the signal of each SIM, whether the internet works, air pressure or the phone\'s movement (to notice lifts) and your location while protection runs.\n\nWhere it goes: nowhere. Everything stays on this phone, encrypted with a key that can\'t leave the phone. Apart from the downloads you start, SANKET sends nothing to any server.\n\nWhat it keeps: places where you lost signal (rounded to about 11 m and forgotten after some weeks without new losses) and a safety log for 30 days.</string>
+    <string name="privacy_text">SANKET watches your phone\'s signal so it can save your downloads before the signal drops.\n\nWhat it reads: the signal of each SIM, whether the internet works, air pressure or the phone\'s movement (to notice lifts) and your location while protection runs.\n\nWhere it goes: nowhere. Everything stays on this phone, encrypted with a key that can\'t leave the phone. Apart from the downloads you start, SANKET sends nothing to any server.\n\nWhat it keeps: places where you lost signal (rounded to about 11 m and forgotten after some weeks without new losses) and a safety log for 30 days. A test ride you record stays here, encrypted, until you share or delete it.</string>
     <string name="delete_everything">Delete my data</string>
     <string name="delete_title">Delete everything?</string>
     <string name="delete_confirm">This deletes all places, notes, the safety log and unfinished downloads from this phone. It can\'t be undone.</string>
@@ -241,4 +241,37 @@
     <string name="tile_label">SANKET</string>
     <string name="tile_on">Protecting</string>
     <string name="tile_off">Off</string>
+    <!-- Test ride: a field-test recording -->
+    <string name="record">Record a test ride</string>
+    <string name="record_sub">The signal every second, to test SANKET in real basements and lifts</string>
+    <string name="record_badge">● %s</string>
+    <string name="record_saved_badge">Saved</string>
+    <string name="record_paused_badge">Paused</string>
+    <string name="record_paused_title">Test ride paused</string>
+    <string name="record_paused_text">Protection is off, so nothing is being recorded. Turn protection on to carry on, or stop the recording.</string>
+    <string name="record_need_protection">Turn on protection first: the test ride records the same readings.</string>
+    <string name="record_turn_on">Turn on</string>
+    <string name="record_not_in_demo">The demo is playing. Stop it first: a test ride records only your real signal.</string>
+    <string name="record_intro">SANKET will save your signal every second, with its own warnings, until you stop it. Go into a basement, a lift or down a parking ramp as you normally would. Tap this row again to mark a moment, such as the ramp or the lift doors, or to stop.\n\nThe recording stays encrypted on this phone until you share it.</string>
+    <string name="record_start">Start</string>
+    <string name="record_now_title">Recording, %s</string>
+    <string name="record_now_text">Mark the moment you reach a ramp, a basement door or a lift, or stop the recording.</string>
+    <string name="record_mark">Mark now</string>
+    <string name="record_stop">Stop</string>
+    <string name="record_keep">Keep recording</string>
+    <string name="record_marked">Marked</string>
+    <string name="record_saved_title">Test ride</string>
+    <string name="record_saved_text">%s of readings, one per second, kept encrypted on this phone. Share it as a CSV file, for example with your team.</string>
+    <string name="record_share_title">Share the test ride?</string>
+    <string name="record_share_text">It lists the signal your phone measured each second and the mobile cell it used, with no GPS location. Share it only with people you trust.</string>
+    <string name="record_share_failed">Could not prepare the file. Try again.</string>
+    <string name="record_delete">Delete</string>
+    <string name="record_delete_title">Delete the test ride?</string>
+    <string name="record_delete_text">The recording is removed from this phone.</string>
+
+    <!-- About -->
+    <string name="about">About SANKET</string>
+    <string name="about_sub">Who made it, and the website</string>
+    <string name="about_text">SANKET warns you seconds before your phone loses signal, and saves your downloads first.\n\nMade by Team Invicti at Terna Engineering College, Navi Mumbai, with our mentor, Dr. Rohini Palve. It began as our answer to PRAYAS problem PRAYAS-COMP-26-S-020.\n\nVersion %s</string>
+    <string name="about_website">Open the website</string>
 </resources>

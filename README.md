@@ -33,7 +33,7 @@ cd research && ./setup.sh                                       # the study: ins
 ./.venv/bin/python experiments/run_all.py --reuse-params       # reproduces every number and figure (about 2 min)
 open web/SANKET_dashboard.html                                  # interactive dashboard, works offline
 
-cd app && ./gradlew :core:test :mobile:assembleDebug            # the Android app and its 44 unit tests
+cd app && ./gradlew :core:test :mobile:assembleDebug            # the Android app and its 56 unit tests
 ```
 
 ## Credits

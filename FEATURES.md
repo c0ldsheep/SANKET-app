@@ -10,8 +10,11 @@ first. Every feature below says when it helps, what SANKET does, and how far it 
 - **Built**: in the app and passing Android's code checker, but not yet tried on real phones in real buildings.
 - **Planned**: needs the shared fleet server, which is not built yet.
 
-The app has been checked by 51 automated tests, by Android's lint tool and on an Android 13 emulator. It has
-not yet been tested on real phones in real buildings; that field test is the next step.
+The app has been checked by 56 automated tests, by Android's lint tool and on an Android 13 emulator. It has
+not yet been tested on real phones in real buildings; that field test is the next step, recorded with feature 30.
+
+**New in 0.4.0 (10 October 2026):** test rides for the field test (feature 30), an About screen that credits the
+team and our mentor, Dr. Rohini Palve, and the demo now says it replays a test ride from the study.
 
 **New in 0.3.0 (6 October 2026):** lifts are noticed on phones without a barometer (feature 9), downloads of 100 MB
 or more ask before using mobile data (feature 24), and Battery Saver checks nearby towers less often (feature 17).
@@ -231,6 +234,16 @@ The table at the end shows where each item of the 5 October list of bugs, gaps a
   - The log can be shared with one tap, after a reminder that it contains times and places.
 - **Status:** Built and unit-tested. Alerting a safety team while the rider is still offline is Planned.
 
+### 30. Test rides (new in 0.4.0)
+- **When it helps:** testing SANKET in real basements and lifts, and showing the result.
+- **What SANKET does:**
+  - While protection runs, it saves the signal every second with its own decisions: 4G or 5G signal, quality,
+    the neighbouring cell, the risk, each warning, whether the phone is connected, and lift movement. No GPS.
+  - Tap the row to mark a moment (the ramp, the lift doors), or to stop. It stops by itself after four hours.
+  - The recording stays encrypted on the phone, survives the app being closed, and is shared as a CSV file that
+    the study's loader reads directly (`load_field_log` in `research/sanket/realdata.py`).
+- **Status:** Built, unit-tested (5 tests) and checked on an emulator. Its first use is the field test.
+
 ### 19. Telling dispatch before going quiet
 - **When it helps:** a delivery platform marks a rider "unresponsive" or reassigns the order while they are in a lift.
 - **What SANKET does:** just before the drop it prepares a short message: "going offline at a known dead zone, back in
@@ -327,8 +340,9 @@ On 5 October we listed 31 bugs, gaps and ideas after reading the app's code. Ver
 ---
 
 ## Next steps
-1. **Field test:** basements and lifts in Navi Mumbai on Jio, Airtel and Vi, recorded with the phone tool in
-   `research/live`, to confirm features 9, 14, 15 and 25 and tune their thresholds.
+1. **Field test:** basements and lifts in Navi Mumbai on Jio, Airtel and Vi, recorded with the app's test rides
+   (feature 30) or the phone tool in `research/live`, to confirm features 9, 14, 15 and 25 and tune their
+   thresholds.
 2. **Fleet server:** shared places and notes, the dispatch notice and safety alerts, with Play Integrity checks.
 3. **Hindi and Marathi** screens.
 4. **Website (done):** live at https://c0ldsheep.github.io/SANKET-app/ since 10 October 2026, after our mentor's

@@ -13,11 +13,13 @@ import io.github.c0ldsheep.sanket.core.LayerWatch;
 import io.github.c0ldsheep.sanket.core.LinkHealth;
 import io.github.c0ldsheep.sanket.core.OfflineNotice;
 import io.github.c0ldsheep.sanket.core.OutageTracker;
+import io.github.c0ldsheep.sanket.core.RideLog;
 import io.github.c0ldsheep.sanket.core.SafetyLog;
 import io.github.c0ldsheep.sanket.core.SanketDetector;
 import io.github.c0ldsheep.sanket.core.LiftMotion;
 import io.github.c0ldsheep.sanket.core.VerticalMotion;
 import io.github.c0ldsheep.sanket.core.ZoneMemory;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -114,6 +116,12 @@ final class Engine implements Transfers.Listener {
     private int noticeBackS;
     private String lastNotice = "";
     private long savedAtMs;
+    /** A test ride for field tests: every real second, kept encrypted until the rider shares it. */
+    private final RideLog rideLog = new RideLog(ZoneId.systemDefault());
+    private boolean rideRecording;
+
+    /** Where a test ride stands. */
+    enum Ride { NONE, RECORDING, SAVED }
 
     private Engine(Context app) {
         this.app = app;
@@ -128,6 +136,7 @@ final class Engine implements Transfers.Listener {
         log.dropBefore(now - LOG_RETENTION_MS);
         transfers = new Transfers(app, stores, this);
         detector = new SanketDetector(params());
+        rideRecording = stores.loadRide(rideLog);
     }
 
     Snapshot snapshot() { return snapshot; }
@@ -304,6 +313,14 @@ final class Engine implements Transfers.Listener {
         in.movement = demoMode ? VerticalMotion.Movement.LEVEL : movement(t);
         in.health = demoMode ? LinkHealth.State.OK : health.state(t);
         in.atKnownZone = near != null && !wifi;
+        if (rideRecording && !demoMode) {
+            boolean lte = tech == Snapshot.Tech.LTE;
+            boolean nr = tech == Snapshot.Tech.NR;
+            rideLog.add(now, tech.name().toLowerCase(Locale.ROOT), lte ? signal : Double.NaN, lte ? quality : Double.NaN,
+                    lte ? neighbour : Double.NaN, nr ? signal : Double.NaN, cell, risk, alarm, cellular, wifi,
+                    in.movement.name().toLowerCase(Locale.ROOT));
+            if (rideLog.full()) stopRide();
+        }
         if (policy.update(t, in)) onLevelChanged(now, op, signal, f, near);
         if (!demoMode && now - savedAtMs > 60_000L) save();
         publish(now, t, sims, data, tech, offline, risk, near, f, demoMode);
@@ -353,6 +370,35 @@ final class Engine implements Transfers.Listener {
 
     synchronized boolean logEmpty() { return log.entries().isEmpty(); }
 
+    synchronized Ride ride() { return !rideLog.started() ? Ride.NONE : rideRecording ? Ride.RECORDING : Ride.SAVED; }
+
+    synchronized long rideSeconds() { return rideLog.seconds(System.currentTimeMillis()); }
+
+    synchronized int rideRows() { return rideLog.rows(); }
+
+    synchronized long rideStartMs() { return rideLog.startMs(); }
+
+    synchronized String rideCsv() { return rideLog.csv(); }
+
+    synchronized void startRide() {
+        rideLog.start(System.currentTimeMillis());
+        rideRecording = true;
+        stores.saveRide(rideLog, true);
+    }
+
+    synchronized void markRide() { rideLog.mark(); }
+
+    synchronized void stopRide() {
+        rideRecording = false;
+        stores.saveRide(rideLog, false);
+    }
+
+    synchronized void deleteRide() {
+        rideLog.clear();
+        rideRecording = false;
+        stores.deleteRide();
+    }
+
     synchronized String safetyLogText() { return log.export(); }
 
     /** Deletes places, notes, the log, the phone profile, unfinished downloads, the key and settings. */
@@ -365,6 +411,8 @@ final class Engine implements Transfers.Listener {
         profile = new DeviceProfile();
         carrierNames.clear();
         transfers.clearAll();
+        rideLog.clear();
+        rideRecording = false;
         stores.wipe();
     }
 
@@ -565,6 +613,7 @@ final class Engine implements Transfers.Listener {
     }
 
     private void save() {
+        if (rideRecording) stores.saveRide(rideLog, true);
         stores.saveZones(zones);
         stores.saveLog(log);
         stores.saveProfile(profile);

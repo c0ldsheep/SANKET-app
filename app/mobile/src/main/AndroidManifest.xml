@@ -29,6 +29,13 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Sanket">
 
+        <!-- Hands a test ride, as a CSV file, to the app picked in the share sheet. Read only. -->
+        <provider
+            android:name=".ShareProvider"
+            android:authorities="io.github.c0ldsheep.sanket.share"
+            android:exported="false"
+            android:grantUriPermissions="true" />
+
         <activity
             android:name=".MainActivity"
             android:exported="true"

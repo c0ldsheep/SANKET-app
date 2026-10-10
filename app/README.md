@@ -80,7 +80,10 @@ The look is described in [DESIGN.md](DESIGN.md).
 
 ## How it was checked
 
-- 44 unit tests in `core/`, and Android lint with no issues.
+- 56 unit tests in `core/`, and Android lint with no issues.
+- 0.4.0 on the emulator: a test ride recorded the signal every second, survived the emulator being shut down hard,
+  was shared as a CSV file through the share sheet and loaded straight into the study's `load_field_log`; delete
+  removed it; 0.4.0 installed over 0.3.0 as an update.
 - On an Android 13 emulator: every screen in light and dark mode; the demo trip; a real 8.6 MB download cut three
   times (once by airplane mode) and a 16.1 MB download interrupted by a phone restart, both byte for byte identical
   to direct downloads; the demo's sample download, paused by the replayed drop and finished identical to the

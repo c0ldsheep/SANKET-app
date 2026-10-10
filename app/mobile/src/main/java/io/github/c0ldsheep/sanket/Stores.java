@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Log;
 import io.github.c0ldsheep.sanket.core.DeviceProfile;
+import io.github.c0ldsheep.sanket.core.RideLog;
 import io.github.c0ldsheep.sanket.core.SafetyLog;
 import io.github.c0ldsheep.sanket.core.ZoneMemory;
 import java.io.IOException;
@@ -25,6 +26,9 @@ final class Stores {
     private static final String LOG = "safety-log.bin";
     private static final String TRANSFERS = "downloads.bin";
     private static final String CARRIERS = "carrier_names";
+    private static final String RIDE = "test-ride.bin";
+    private static final String PREF_RIDE_START = "ride_start_ms";
+    private static final String PREF_RIDE_ON = "ride_recording";
 
     private final Context ctx;
 
@@ -197,6 +201,7 @@ final class Stores {
     /** Deletes every file, the encryption key and all settings. */
     void wipe() {
         SecureFiles.delete(ctx, ZONES);
+        SecureFiles.delete(ctx, RIDE);
         SecureFiles.delete(ctx, LOG);
         SecureFiles.delete(ctx, TRANSFERS);
         try {
@@ -205,6 +210,30 @@ final class Stores {
             Log.e(TAG, "Could not delete the key", e);
         }
         prefs().edit().clear().apply();
+    }
+
+    /** Saves the test ride, and whether it is still recording. */
+    void saveRide(RideLog ride, boolean recording) {
+        write(RIDE, ride.csv());
+        prefs().edit().putLong(PREF_RIDE_START, ride.startMs()).putBoolean(PREF_RIDE_ON, recording).apply();
+    }
+
+    /** Loads a saved test ride into {@code ride}; returns true if it was still recording. */
+    boolean loadRide(RideLog ride) {
+        long start = prefs().getLong(PREF_RIDE_START, -1L);
+        if (start < 0L) return false;
+        String text = read(RIDE);
+        if (text == null) {
+            deleteRide();
+            return false;
+        }
+        ride.restore(start, text);
+        return prefs().getBoolean(PREF_RIDE_ON, false);
+    }
+
+    void deleteRide() {
+        SecureFiles.delete(ctx, RIDE);
+        prefs().edit().remove(PREF_RIDE_START).remove(PREF_RIDE_ON).apply();
     }
 
     private void write(String name, String text) {
